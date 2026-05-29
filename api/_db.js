@@ -1,12 +1,12 @@
-import { neon } from '@neondatabase/serverless';
+const { neon } = require('@neondatabase/serverless');
 
 let sql;
-export function getDb() {
+function getDb() {
   if (!sql) sql = neon(process.env.DATABASE_URL);
   return sql;
 }
 
-export async function initDb() {
+async function initDb() {
   const sql = getDb();
   await sql`
     CREATE TABLE IF NOT EXISTS reports (
@@ -39,3 +39,5 @@ export async function initDb() {
     )
   `;
 }
+
+module.exports = { getDb, initDb };

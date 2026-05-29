@@ -1,4 +1,4 @@
-export async function formatWithMinimax(text) {
+async function formatWithMinimax(text) {
   const apiKey = process.env.MINIMAX_API_KEY;
   if (!apiKey) throw new Error('No MINIMAX_API_KEY');
 
@@ -63,3 +63,5 @@ Rules:
   const cleaned = content.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
   return JSON.parse(cleaned);
 }
+
+module.exports = { formatWithMinimax };

@@ -167,6 +167,7 @@ def update_cn(conn):
         print("[CN] 无 A股标的")
         return
 
+    print(f"[CN] 数据库原始数据示例: exchange={stocks[0]['exchange']!r} code={stocks[0]['code']!r}")
     code_map = {}
     for s in stocks:
         prefix = EXCHANGE_PREFIX.get(s["exchange"].upper(), "")
@@ -185,6 +186,7 @@ def update_hk(conn):
         print("[HK] 无港股标的")
         return
 
+    print(f"[HK] 数据库原始数据示例: exchange={stocks[0]['exchange']!r} code={stocks[0]['code']!r}")
     code_map = {}
     for s in stocks:
         code = s["code"].lstrip("0").zfill(HK_CODE_LEN)
@@ -263,9 +265,12 @@ def _batch_update(conn, code_map: dict, method: str, tag: str, price_date: str):
         for i in range(0, len(thscodes), BATCH_SIZE):
             batch = thscodes[i : i + BATCH_SIZE]
             try:
+                print(f"  发送 THSCODE: {batch}")
                 resp = fn(batch, "基础数据")
+                print(f"  resp.data 类型: {type(resp.data)}, 值: {resp.data}")
+                rows = resp.data or []
                 batch_ok = 0
-                for row in resp.data:
+                for row in rows:
                     thscode = extract_thscode(row)
                     price   = extract_price(row)
                     if not thscode or price is None:

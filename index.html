@@ -207,6 +207,17 @@ tr.r-recover td{background:rgba(163,113,247,.03)}
 .mbody{padding:18px 20px}
 .mfoot{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
 
+/* Price update buttons */
+.price-mkt-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 8px;background:var(--card2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .15s;color:var(--text)}
+.price-mkt-btn:hover:not(:disabled){border-color:var(--accent)}
+.price-mkt-btn:disabled{opacity:.5;cursor:not-allowed}
+.pmkt-flag{font-size:18px}
+.pmkt-name{font-size:12px;font-weight:700}
+.pmkt-status{font-size:10px;color:var(--sub);text-align:center;min-height:14px;line-height:1.3}
+.pmkt-status.ok{color:var(--green)}
+.pmkt-status.err{color:var(--red)}
+.pmkt-status.run{color:var(--yellow)}
+
 /* Info button */
 .btn-info{width:28px;height:28px;border-radius:50%;background:var(--card2);border:1px solid var(--border);color:var(--sub);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .btn-info:hover{border-color:var(--accent);color:var(--accent)}
@@ -267,6 +278,7 @@ tr.r-recover td{background:rgba(163,113,247,.03)}
     </label>
     <button class="btn btn-s" onclick="openManual()">+ 手动</button>
     <button class="btn btn-p" onclick="openSubmit()">提交报告</button>
+    <button class="btn btn-s" onclick="openPriceUpdate()" title="更新收盘价">↻ 更新价格</button>
     <button class="btn-info" onclick="openInfo()" title="系统说明">?</button>
   </div>
 </div>
@@ -372,6 +384,31 @@ tr.r-recover td{background:rgba(163,113,247,.03)}
     <div class="mfoot">
       <button class="btn btn-s" onclick="closeOv('delOv')">取消</button>
       <button class="btn btn-d" id="delBtn" onclick="doDelete()">确认删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- Price Update -->
+<div class="ov h" id="priceOv">
+  <div class="modal" style="max-width:400px">
+    <div class="mhdr"><h2>↻ 更新收盘价</h2><button class="mclose" onclick="closeOv('priceOv')">×</button></div>
+    <div class="mbody">
+      <div id="priceAlert"></div>
+      <p style="font-size:12px;color:var(--sub);margin-bottom:14px;line-height:1.6">
+        手动触发各市场收盘价更新。系统会自动判断取最近交易日的收盘价，非交易时间运行不会出错。
+      </p>
+      <div class="fg"><label>密码</label><input type="password" id="pricePwd" placeholder="••••••••"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px">
+        <button class="price-mkt-btn" id="pbtn-cn" onclick="triggerPrice('cn')">
+          <span class="pmkt-flag">🇨🇳</span><span class="pmkt-name">A股</span><span class="pmkt-status" id="pst-cn">—</span>
+        </button>
+        <button class="price-mkt-btn" id="pbtn-hk" onclick="triggerPrice('hk')">
+          <span class="pmkt-flag">🇭🇰</span><span class="pmkt-name">港股</span><span class="pmkt-status" id="pst-hk">—</span>
+        </button>
+        <button class="price-mkt-btn" id="pbtn-us" onclick="triggerPrice('us')">
+          <span class="pmkt-flag">🇺🇸</span><span class="pmkt-name">美股</span><span class="pmkt-status" id="pst-us">—</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -900,6 +937,44 @@ function showAlert(el,t,m){ el.innerHTML=`<div class="alert a-${t}">${esc(m)}</d
 // Modal
 // ─────────────────────────────────────────────────────────────────────────────
 
+function openPriceUpdate() {
+  document.getElementById('priceAlert').innerHTML = '';
+  document.getElementById('pricePwd').value = '';
+  showOv('priceOv');
+  // 拉取上次状态
+  fetch('/api/trigger').then(r => r.json()).then(data => {
+    for (const [mkt, msg] of Object.entries(data)) {
+      const el = document.getElementById(`pst-${mkt}`);
+      if (el) { el.textContent = msg; el.className = 'pmkt-status ' + (msg.startsWith('失败') ? 'err' : 'ok'); }
+    }
+  }).catch(() => {});
+}
+async function triggerPrice(market) {
+  const pwd = document.getElementById('pricePwd').value;
+  if (!pwd) { showAlert(document.getElementById('priceAlert'), 'err', '请先输入密码'); return; }
+  const btn = document.getElementById(`pbtn-${market}`);
+  const st  = document.getElementById(`pst-${market}`);
+  btn.disabled = true;
+  st.textContent = '更新中…'; st.className = 'pmkt-status run';
+  try {
+    const r = await fetch('/api/trigger', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ market, password: pwd })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      st.textContent = '已启动'; st.className = 'pmkt-status ok';
+    } else {
+      st.textContent = d.error || d.msg || '失败'; st.className = 'pmkt-status err';
+      showAlert(document.getElementById('priceAlert'), 'err', d.error || d.msg);
+    }
+  } catch (e) {
+    st.textContent = '网络错误'; st.className = 'pmkt-status err';
+  } finally {
+    btn.disabled = false;
+  }
+}
 function openInfo(){ showOv('infoOv'); }
 function openSubmit(){ reset('subAlert','subTxt','subPwd'); showOv('submitOv'); }
 function openManual(){ document.getElementById('m_dt').value=new Date().toISOString().slice(0,10); reset('manAlert'); showOv('manualOv'); }

@@ -142,6 +142,20 @@ def extract_thscode(row: dict) -> str:
     return ""
 
 
+def _cn_hk_price_date() -> str:
+    """A股/港股：15:00/16:00 后取今天，否则取上一个工作日（手动触发时不出错）"""
+    now = datetime.now(TZ_CN)
+    # 周六(5)周日(6) 或 还没收盘，取最近的工作日
+    d = now.date()
+    if now.weekday() == 5:          # 周六 → 周五
+        d -= timedelta(days=1)
+    elif now.weekday() == 6:        # 周日 → 周五
+        d -= timedelta(days=2)
+    elif now.weekday() == 0 and now.hour < 15:  # 周一未开盘 → 上周五
+        d -= timedelta(days=3)
+    return d.isoformat()
+
+
 # ── A股（沪深）─────────────────────────────────────────────────────────────────
 
 def update_cn(conn):
@@ -157,8 +171,7 @@ def update_cn(conn):
             thscode = f"{prefix}{s['code']}"
             code_map[thscode] = s["id"]
 
-    _batch_update(conn, code_map, "market_data_cn", "[CN]",
-                  date.today().isoformat())
+    _batch_update(conn, code_map, "market_data_cn", "[CN]", _cn_hk_price_date())
 
 
 # ── 港股 ──────────────────────────────────────────────────────────────────────
@@ -175,8 +188,7 @@ def update_hk(conn):
         thscode = f"USHK{code}"
         code_map[thscode] = s["id"]
 
-    _batch_update(conn, code_map, "market_data_hk", "[HK]",
-                  date.today().isoformat())
+    _batch_update(conn, code_map, "market_data_hk", "[HK]", _cn_hk_price_date())
 
 
 # ── 美股 ──────────────────────────────────────────────────────────────────────
@@ -187,10 +199,14 @@ def update_us(conn):
         print("[US] 无美股标的")
         return
 
-    # 美股收盘日期：北京时间凌晨跑时对应的是美东昨天
+    # 美股收盘日期：16:00 ET 后取今天，否则退一天，再跳过周末
     now_us = datetime.now(TZ_US)
-    # 如果美东还没到收盘时间（16:00），取前一个交易日
     close_date = now_us.date() if now_us.hour >= 16 else (now_us - timedelta(days=1)).date()
+    # 跳过周末（周六→周五，周日→周五）
+    if close_date.weekday() == 5:
+        close_date -= timedelta(days=1)
+    elif close_date.weekday() == 6:
+        close_date -= timedelta(days=2)
 
     code_map = {}
     for s in stocks:

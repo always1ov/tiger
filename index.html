@@ -856,7 +856,7 @@ function renderTrk() {
         </td>
         <td>
           <div class="ret ${retCls}">${retStr}</div>
-          ${ret!=null?`<div class="ret-sub">${+t.first_price} → ${+t.latest_price}</div>`:`<div class="ret-sub">价格数据不足</div>`}
+          ${ret!=null?`<div class="ret-sub">${+t.first_price} → ${+(t.price??t.latest_price)}</div>`:`<div class="ret-sub">价格数据不足</div>`}
         </td>
         <td>
           ${t.first_price!=null?`
@@ -865,8 +865,14 @@ function renderTrk() {
               <span style="font-size:13px;font-weight:600;font-family:monospace">${+t.first_price}</span>
               <span class="ptag ${t.first_price_type==='关键价格'?'pt-key':'pt-cur'}" style="font-size:9px;vertical-align:middle">${esc(t.first_price_type||'价格')}</span>
             </div>`:'<span style="color:var(--sub);font-size:12px">首次无价格</span>'}
-          ${t.latest_price!=null?`
-            <div style="font-size:11px;color:var(--sub);margin:5px 0 2px">最新（${ld}）</div>
+          ${t.price!=null?`
+            <div style="font-size:11px;color:var(--sub);margin:5px 0 2px">收盘价（${(t.price_date||'').slice(0,10)}）</div>
+            <div style="white-space:nowrap">
+              <span style="font-size:13px;font-weight:700;font-family:monospace;color:var(--text)">${+t.price}</span>
+              <span class="ptag pt-cur" style="font-size:9px;vertical-align:middle">自动更新</span>
+            </div>`:
+          t.latest_price!=null?`
+            <div style="font-size:11px;color:var(--sub);margin:5px 0 2px">报告价（${ld}）</div>
             <div style="white-space:nowrap">
               <span style="font-size:13px;font-weight:600;font-family:monospace">${+t.latest_price}</span>
               <span class="ptag ${t.latest_price_type==='关键价格'?'pt-key':'pt-cur'}" style="font-size:9px;vertical-align:middle">${esc(t.latest_price_type||'价格')}</span>
@@ -897,8 +903,9 @@ function renderTrk() {
 }
 
 function calcRet(t) {
-  const fp = t.first_price !=null ? +t.first_price  : null;
-  const lp = t.latest_price!=null ? +t.latest_price : null;
+  const fp = t.first_price!=null ? +t.first_price : null;
+  // 优先用自动更新的收盘价，否则用报告里的最新价
+  const lp = t.price!=null ? +t.price : (t.latest_price!=null ? +t.latest_price : null);
   if (fp==null||lp==null||fp===0) return null;
   return (lp-fp)/fp*100;
 }

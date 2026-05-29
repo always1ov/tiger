@@ -3,395 +3,402 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>股票监测报告</title>
+<title>股票监测</title>
 <style>
-  :root {
-    --bg: #0d1117;
-    --card: #161b22;
-    --card2: #1c2130;
-    --border: #30363d;
-    --text: #e6edf3;
-    --sub: #7d8590;
-    --accent: #388bfd;
-    --green: #3fb950;
-    --red: #f85149;
-    --yellow: #d29922;
-    --radius: 10px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; min-height: 100vh; }
+:root {
+  --bg:      #0d1117;
+  --card:    #161b22;
+  --card2:   #1c2130;
+  --border:  #30363d;
+  --text:    #e6edf3;
+  --sub:     #7d8590;
+  --accent:  #388bfd;
+  --green:   #3fb950;
+  --red:     #f85149;
+  --yellow:  #d29922;
+  --orange:  #db6d28;
+  --purple:  #a371f7;
+  --r: 10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
 
-  /* ── Topbar ── */
-  .topbar {
-    background: var(--card); border-bottom: 1px solid var(--border);
-    padding: 0 20px; display: flex; align-items: stretch; gap: 0;
-    position: sticky; top: 0; z-index: 100; min-height: 48px;
-  }
-  .topbar-brand { font-size: 15px; font-weight: 700; color: var(--accent); display: flex; align-items: center; padding-right: 20px; flex-shrink: 0; border-right: 1px solid var(--border); margin-right: 4px; }
+/* ── Topbar ── */
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:stretch;position:sticky;top:0;z-index:100;min-height:48px}
+.brand{font-size:15px;font-weight:700;color:var(--accent);display:flex;align-items:center;padding-right:18px;border-right:1px solid var(--border);flex-shrink:0}
+.tabs{display:flex;align-items:stretch}
+.tab{padding:0 16px;font-size:13px;font-weight:600;color:var(--sub);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.tc{font-size:10px;padding:1px 6px;border-radius:10px;font-weight:700;background:var(--card2);border:1px solid var(--border)}
+.tab.on .tc{background:rgba(56,139,253,.15);border-color:rgba(56,139,253,.3);color:var(--accent)}
+.topbar-r{display:flex;gap:8px;margin-left:auto;align-items:center;padding-left:12px}
 
-  /* Tabs */
-  .tabs { display: flex; align-items: stretch; gap: 0; }
-  .tab-btn {
-    padding: 0 18px; font-size: 13px; font-weight: 600; color: var(--sub);
-    border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent;
-    display: flex; align-items: center; gap: 6px; white-space: nowrap; transition: color .15s;
-  }
-  .tab-btn:hover { color: var(--text); }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .tab-count { background: var(--card2); border: 1px solid var(--border); font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 700; }
-  .tab-btn.active .tab-count { background: rgba(56,139,253,.15); border-color: rgba(56,139,253,.3); color: var(--accent); }
+/* Search */
+.srch{position:relative}
+.srch input{padding:6px 11px 6px 29px;background:var(--card2);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:13px;outline:none;width:210px}
+.srch input:focus{border-color:var(--accent)}
+.srch::before{content:'';position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%237d8590' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.415zm-5.242 1.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E") no-repeat center;background-size:contain}
 
-  .topbar-right { display: flex; gap: 8px; margin-left: auto; align-items: center; padding-left: 12px; }
+/* Toggle */
+.tog-wrap{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.tog-wrap span{font-size:12px;color:var(--sub);white-space:nowrap}
+.tog{position:relative;display:inline-block;width:34px;height:19px}
+.tog input{opacity:0;width:0;height:0}
+.sl{position:absolute;inset:0;background:var(--border);border-radius:19px;cursor:pointer;transition:.2s}
+.sl:before{content:'';position:absolute;height:13px;width:13px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+input:checked+.sl{background:var(--accent)}
+input:checked+.sl:before{transform:translateX(15px)}
 
-  /* Search */
-  .search-wrap { position: relative; }
-  .search-wrap input {
-    padding: 6px 12px 6px 30px; background: var(--card2); border: 1px solid var(--border);
-    border-radius: 20px; color: var(--text); font-size: 13px; outline: none; width: 220px;
-  }
-  .search-wrap input:focus { border-color: var(--accent); }
-  .search-wrap::before {
-    content: ''; position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-    width: 13px; height: 13px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%237d8590' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.415zm-5.242 1.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E") no-repeat center;
-    background-size: contain;
-  }
+/* Buttons */
+.btn{padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:opacity .15s;white-space:nowrap}
+.btn:hover{opacity:.82}.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-p{background:var(--accent);color:#fff}
+.btn-s{background:var(--card2);color:var(--text);border:1px solid var(--border)}
+.btn-d{background:rgba(248,81,73,.1);color:var(--red);border:1px solid rgba(248,81,73,.3)}
+.btn-sm{padding:3px 8px;font-size:11px;border-radius:5px}
 
-  /* Toggle */
-  .toggle-pill { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
-  .toggle-pill span { font-size: 12px; color: var(--sub); white-space: nowrap; }
-  .toggle { position: relative; display: inline-block; width: 34px; height: 19px; }
-  .toggle input { opacity: 0; width: 0; height: 0; }
-  .slider { position: absolute; inset: 0; background: var(--border); border-radius: 19px; cursor: pointer; transition: .2s; }
-  .slider:before { content:''; position:absolute; height:13px; width:13px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.2s; }
-  input:checked + .slider { background: var(--accent); }
-  input:checked + .slider:before { transform: translateX(15px); }
+/* ── Layout ── */
+.main{padding:20px;max-width:1300px;margin:0 auto}
+.pane{display:none}.pane.on{display:block}
 
-  /* ── Buttons ── */
-  .btn { padding: 7px 14px; border-radius: 7px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: opacity .15s; white-space: nowrap; }
-  .btn:hover { opacity: .82; }
-  .btn:disabled { opacity: .45; cursor: not-allowed; }
-  .btn-primary   { background: var(--accent); color: #fff; }
-  .btn-secondary { background: var(--card2); color: var(--text); border: 1px solid var(--border); }
-  .btn-danger    { background: rgba(248,81,73,.12); color: var(--red); border: 1px solid rgba(248,81,73,.3); }
-  .btn-sm { padding: 3px 8px; font-size: 11px; border-radius: 5px; }
+/* ── Report card ── */
+.rcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:18px;overflow:hidden}
 
-  /* ── Main ── */
-  .main { padding: 20px; max-width: 1300px; margin: 0 auto; }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+.rhdr{padding:11px 16px;background:var(--card2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.r-mkt{background:var(--accent);color:#fff;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.r-date{font-size:15px;font-weight:700}
+.r-age{font-size:11px;padding:1px 7px;border-radius:10px;font-weight:600}
+.r-age.today{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3)}
+.r-age.old{background:rgba(125,133,144,.1);color:var(--sub);border:1px solid var(--border)}
+.r-src{font-size:13px;color:var(--sub)}
+.r-act{margin-left:auto}
 
-  /* ── Report card (Tab 1) ── */
-  .report-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 18px; overflow: hidden; }
-  .report-header {
-    padding: 11px 16px; background: var(--card2); border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  }
-  .rh-market { background: var(--accent); color: #fff; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-  .rh-date   { font-size: 15px; font-weight: 700; }
-  .rh-age    { font-size: 11px; padding: 1px 7px; border-radius: 10px; font-weight: 600; }
-  .rh-age.today { background: rgba(63,185,80,.15); color: var(--green); border: 1px solid rgba(63,185,80,.3); }
-  .rh-age.old   { background: rgba(125,133,144,.1); color: var(--sub); border: 1px solid var(--border); }
-  .rh-source { font-size: 13px; color: var(--sub); }
-  .rh-count  { font-size: 12px; color: var(--sub); }
-  .rh-actions { margin-left: auto; }
+/* ── Report summary bar ── */
+.rsumm{display:flex;align-items:center;gap:0;border-bottom:1px solid var(--border)}
+.rsumm-pill{display:flex;align-items:center;gap:6px;padding:7px 14px;font-size:12px;font-weight:600;border-right:1px solid var(--border);flex-shrink:0}
+.rsumm-pill:last-child{border-right:none}
+.pill-n{font-size:15px;font-weight:800}
+.s-sell .pill-n{color:var(--red)}
+.s-down .pill-n{color:var(--orange)}
+.s-up   .pill-n{color:var(--green)}
+.s-hold .pill-n{color:var(--sub)}
+.rsumm-pill .lbl{color:var(--sub);font-weight:500}
 
-  /* Sell bar */
-  .sell-bar {
-    display: flex; align-items: center; gap: 10px; padding: 8px 16px;
-    background: rgba(248,81,73,.06); border-bottom: 1px solid rgba(248,81,73,.15);
-    cursor: pointer;
-  }
-  .sell-bar:hover { background: rgba(248,81,73,.1); }
-  .sell-bar-lbl  { font-size: 12px; font-weight: 700; color: var(--red); }
-  .sell-bar-names { font-size: 12px; color: var(--sub); flex: 1; }
-  .sell-bar-hint  { font-size: 11px; color: var(--sub); flex-shrink: 0; }
+/* ── Signal section headers ── */
+.sec-hdr{padding:5px 16px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.sec-sell  {color:var(--red);    background:rgba(248,81,73,.05);  border-bottom-color:rgba(248,81,73,.2)}
+.sec-down  {color:var(--orange); background:rgba(219,109,40,.05); border-bottom-color:rgba(219,109,40,.15)}
+.sec-up    {color:var(--green);  background:rgba(63,185,80,.05);  border-bottom-color:rgba(63,185,80,.15)}
+.sec-hold  {color:var(--sub);    background:rgba(255,255,255,.015)}
+.sec-recover{color:var(--purple);background:rgba(163,113,247,.05);border-bottom-color:rgba(163,113,247,.2)}
 
-  .section-label {
-    padding: 5px 16px; font-size: 11px; font-weight: 700; letter-spacing: .06em;
-    text-transform: uppercase; color: var(--sub); background: rgba(255,255,255,.015);
-    border-bottom: 1px solid var(--border);
-  }
-  .section-label.sell { color: var(--red); background: rgba(248,81,73,.04); }
+/* Sell collapsed bar */
+.sell-bar{display:flex;align-items:center;gap:10px;padding:8px 16px;background:rgba(248,81,73,.06);border-bottom:1px solid rgba(248,81,73,.15);cursor:pointer}
+.sell-bar:hover{background:rgba(248,81,73,.1)}
+.sell-bar-lbl{font-size:12px;font-weight:700;color:var(--red);flex-shrink:0}
+.sell-bar-names{font-size:12px;color:var(--sub);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sell-bar-hint{font-size:11px;color:var(--sub);flex-shrink:0}
 
-  /* ── Shared table styles ── */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead th {
-    padding: 8px 14px; text-align: left; font-size: 11px; font-weight: 700;
-    color: var(--sub); letter-spacing: .04em; border-bottom: 1px solid var(--border);
-    background: var(--card); white-space: nowrap;
-  }
-  thead th .th-sub { font-size: 10px; font-weight: 400; opacity: .65; display: block; margin-top: 1px; }
-  tbody td { padding: 10px 14px; border-bottom: 1px solid rgba(48,54,61,.5); vertical-align: middle; }
-  tbody tr:last-child td { border-bottom: none; }
-  tbody tr:hover td { background: rgba(56,139,253,.04); }
-  tbody tr.row-sell:hover td { background: rgba(248,81,73,.05); }
+/* ── Table ── */
+.twrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{padding:8px 13px;text-align:left;font-size:11px;font-weight:700;color:var(--sub);letter-spacing:.04em;border-bottom:1px solid var(--border);background:var(--card);white-space:nowrap}
+thead th .ts{font-size:10px;font-weight:400;opacity:.65;display:block;margin-top:1px}
+tbody td{padding:10px 13px;border-bottom:1px solid rgba(48,54,61,.5);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(56,139,253,.04)}
+tr.r-sell   td{background:rgba(248,81,73,.04)}
+tr.r-sell:hover td{background:rgba(248,81,73,.08)}
+tr.r-recover td{background:rgba(163,113,247,.03)}
 
-  /* Stock name */
-  .stock-name { font-size: 15px; font-weight: 700; line-height: 1.3; }
-  .stock-code { font-size: 11px; color: var(--sub); margin-top: 3px; font-family: 'SF Mono','Fira Code',monospace; }
-  .sell-tag   { display: inline-block; background: rgba(248,81,73,.15); color: var(--red); border: 1px solid rgba(248,81,73,.35); font-size: 10px; font-weight: 800; padding: 1px 5px; border-radius: 4px; vertical-align: middle; margin-left: 6px; }
+/* ── Stock name cell ── */
+.sname{font-size:15px;font-weight:700;line-height:1.3}
+.scode{font-size:11px;color:var(--sub);margin-top:3px;font-family:'SF Mono','Fira Code',monospace}
 
-  /* Alloc */
-  .alloc-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-  .alloc-row:last-child { margin-bottom: 0; }
-  .alloc-lbl { font-size: 11px; color: var(--sub); width: 52px; flex-shrink: 0; }
-  .alloc-bar-wrap { width: 80px; height: 4px; background: var(--border); border-radius: 3px; flex-shrink: 0; }
-  .alloc-bar { height: 100%; border-radius: 3px; }
-  .alloc-bar.up   { background: var(--green); }
-  .alloc-bar.down { background: var(--red); }
-  .alloc-val { font-size: 12px; font-weight: 700; width: 36px; text-align: right; flex-shrink: 0; }
-  .alloc-val.up   { color: var(--green); }
-  .alloc-val.down { color: var(--red); }
+/* Signal tag in name */
+.stag{display:inline-block;font-size:10px;font-weight:800;padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:5px;letter-spacing:.04em}
+.stag-sell   {background:rgba(248,81,73,.15);  color:var(--red);    border:1px solid rgba(248,81,73,.35)}
+.stag-new-up {background:rgba(63,185,80,.15);  color:var(--green);  border:1px solid rgba(63,185,80,.35)}
+.stag-recover{background:rgba(163,113,247,.15);color:var(--purple); border:1px solid rgba(163,113,247,.35)}
 
-  /* Channel */
-  .channel-flow { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-  .ch { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; white-space: nowrap; }
-  .ch-up    { background: rgba(63,185,80,.12);  color: var(--green); border: 1px solid rgba(63,185,80,.25); }
-  .ch-down  { background: rgba(248,81,73,.12);  color: var(--red);   border: 1px solid rgba(248,81,73,.25); }
-  .ch-nat   { background: rgba(210,153,34,.12); color: var(--yellow);border: 1px solid rgba(210,153,34,.25); }
-  .ch-other { background: rgba(125,133,144,.1); color: var(--sub);   border: 1px solid var(--border); }
-  .ch-arrow { color: var(--sub); font-size: 12px; }
-  .ch-new   { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; margin-left: 2px; }
-  .ch-new-down { background: rgba(248,81,73,.2); color: var(--red); }
-  .ch-new-up   { background: rgba(63,185,80,.2); color: var(--green); }
+/* ── Allocation cell ── */
+.alloc-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.alloc-row:last-child{margin-bottom:0}
+.al-lbl{font-size:11px;color:var(--sub);width:52px;flex-shrink:0}
+.al-bar{width:80px;height:4px;background:var(--border);border-radius:3px;flex-shrink:0}
+.al-fill{height:100%;border-radius:3px}
+.al-up{background:var(--green)}.al-dn{background:var(--red)}
+.al-val{font-size:12px;font-weight:700;width:36px;text-align:right;flex-shrink:0}
+.al-val.up{color:var(--green)}.al-val.dn{color:var(--red)}
+/* Bias badge */
+.bias{font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;margin-top:4px;display:inline-block}
+.bias-bull{background:rgba(63,185,80,.15);  color:var(--green); border:1px solid rgba(63,185,80,.3)}
+.bias-bear{background:rgba(248,81,73,.12);  color:var(--red);   border:1px solid rgba(248,81,73,.25)}
+.bias-neu {background:rgba(125,133,144,.1); color:var(--sub);   border:1px solid var(--border)}
 
-  /* Price */
-  .price-type-tag { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; display: inline-block; margin-bottom: 3px; }
-  .pt-current { background: rgba(56,139,253,.15); color: var(--accent); border: 1px solid rgba(56,139,253,.3); }
-  .pt-key     { background: rgba(210,153,34,.15); color: var(--yellow); border: 1px solid rgba(210,153,34,.3); }
-  .price-val  { font-size: 14px; font-weight: 700; font-family: 'SF Mono','Fira Code',monospace; }
-  .price-date { font-size: 10px; color: var(--sub); margin-top: 2px; }
+/* ── Channel cell ── */
+.ch-flow{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.ch{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap}
+.ch-up   {background:rgba(63,185,80,.12);  color:var(--green); border:1px solid rgba(63,185,80,.25)}
+.ch-down {background:rgba(248,81,73,.12);  color:var(--red);   border:1px solid rgba(248,81,73,.25)}
+.ch-nat  {background:rgba(210,153,34,.12); color:var(--yellow);border:1px solid rgba(210,153,34,.25)}
+.ch-rec  {background:rgba(163,113,247,.12);color:var(--purple);border:1px solid rgba(163,113,247,.25)}
+.ch-other{background:rgba(125,133,144,.1); color:var(--sub);   border:1px solid var(--border)}
+.ch-arr  {color:var(--sub);font-size:12px;flex-shrink:0}
+/* Transition label (only shown when state changes) */
+.ch-trans{font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:2px}
+.ct-sell   {background:rgba(248,81,73,.2);   color:var(--red)}
+.ct-up     {background:rgba(63,185,80,.2);   color:var(--green)}
+.ct-recover{background:rgba(163,113,247,.2); color:var(--purple)}
+.ct-pullbk {background:rgba(210,153,34,.2);  color:var(--yellow)}
 
-  /* ── Tracking view (Tab 2) ── */
-  .tracking-toolbar {
-    display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
-  }
-  .tracking-toolbar label { font-size: 12px; color: var(--sub); }
-  .tracking-toolbar select {
-    padding: 5px 10px; background: var(--card2); border: 1px solid var(--border);
-    border-radius: 7px; color: var(--text); font-size: 12px; outline: none;
-  }
-  .tracking-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 18px; }
-  .tracking-header { padding: 10px 16px; background: var(--card2); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
-  .tracking-header .rh-market { font-size: 11px; }
+/* ── Price cell ── */
+.ptag{font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;display:inline-block;margin-bottom:3px}
+.pt-cur{background:rgba(56,139,253,.15);color:var(--accent);border:1px solid rgba(56,139,253,.3)}
+.pt-key{background:rgba(210,153,34,.15);color:var(--yellow); border:1px solid rgba(210,153,34,.3)}
+.pval{font-size:14px;font-weight:700;font-family:'SF Mono','Fira Code',monospace}
+.pdate{font-size:10px;color:var(--sub);margin-top:2px}
 
-  /* Return cell */
-  .ret-cell { white-space: nowrap; }
-  .ret-val  { font-size: 17px; font-weight: 800; font-family: 'SF Mono','Fira Code',monospace; }
-  .ret-val.pos { color: var(--green); }
-  .ret-val.neg { color: var(--red); }
-  .ret-val.neu { color: var(--sub); }
-  .ret-detail { font-size: 11px; color: var(--sub); margin-top: 3px; line-height: 1.5; }
+/* ── Tracking tab ── */
+.trk-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.trk-toolbar label{font-size:12px;color:var(--sub)}
+.trk-toolbar select{padding:5px 10px;background:var(--card2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:12px;outline:none}
+.trk-toolbar select:focus{border-color:var(--accent)}
 
-  /* Tracking timeline spark */
-  .spark { display: flex; align-items: flex-end; gap: 2px; height: 24px; margin-top: 4px; }
-  .spark-dot {
-    width: 8px; flex-shrink: 0; border-radius: 2px; min-height: 4px;
-    position: relative; cursor: default;
-  }
-  .spark-dot:hover::after {
-    content: attr(data-tip);
-    position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
-    background: #000; color: #fff; font-size: 10px; padding: 3px 6px; border-radius: 4px;
-    white-space: nowrap; pointer-events: none; z-index: 10;
-  }
+.ret{font-size:17px;font-weight:800;font-family:'SF Mono','Fira Code',monospace}
+.ret.pos{color:var(--green)}.ret.neg{color:var(--red)}.ret.neu{color:var(--sub)}
+.ret-sub{font-size:11px;color:var(--sub);margin-top:3px;line-height:1.5}
 
-  /* Days tracked badge */
-  .days-badge { font-size: 11px; color: var(--sub); background: var(--card2); border: 1px solid var(--border); padding: 1px 7px; border-radius: 10px; white-space: nowrap; }
+.days-tag{font-size:11px;color:var(--sub);background:var(--card2);border:1px solid var(--border);padding:1px 7px;border-radius:10px;white-space:nowrap}
 
-  /* ── Modal ── */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; }
-  .modal-overlay.hidden { display: none; }
-  .modal { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); width: 100%; max-width: 540px; max-height: 92vh; overflow-y: auto; }
-  .modal-head { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .modal-head h2 { font-size: 15px; font-weight: 700; }
-  .modal-close { background: none; border: none; color: var(--sub); font-size: 20px; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
-  .modal-close:hover { background: var(--card2); color: var(--text); }
-  .modal-body { padding: 18px 20px; }
-  .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+/* Sparkline */
+.spark{display:flex;align-items:flex-end;gap:2px;height:22px}
+.sd{width:8px;border-radius:2px;min-height:4px;position:relative;cursor:default;flex-shrink:0}
+.sd:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100%+4px);left:50%;transform:translateX(-50%);background:#111;color:#fff;font-size:10px;padding:3px 7px;border-radius:4px;white-space:nowrap;pointer-events:none;z-index:20;border:1px solid var(--border)}
 
-  /* Form */
-  .form-group { margin-bottom: 12px; }
-  .form-group label { display: block; font-size: 11px; color: var(--sub); margin-bottom: 4px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
-  .form-group input, .form-group textarea, .form-group select {
-    width: 100%; padding: 8px 11px; background: var(--card2); border: 1px solid var(--border);
-    border-radius: 7px; color: var(--text); font-size: 14px; outline: none; font-family: inherit;
-  }
-  .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--accent); }
-  .form-group textarea { resize: vertical; min-height: 130px; font-size: 13px; line-height: 1.6; }
-  .form-group select option { background: var(--card2); }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .form-hint { font-size: 11px; color: var(--sub); margin-top: 4px; }
+/* ── Modal ── */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.ov.h{display:none}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:var(--r);width:100%;max-width:540px;max-height:92vh;overflow-y:auto}
+.mhdr{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.mhdr h2{font-size:15px;font-weight:700}
+.mclose{background:none;border:none;color:var(--sub);font-size:20px;cursor:pointer;padding:2px 6px;border-radius:4px}
+.mclose:hover{background:var(--card2);color:var(--text)}
+.mbody{padding:18px 20px}
+.mfoot{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
 
-  /* Alert */
-  .alert { padding: 9px 13px; border-radius: 7px; font-size: 13px; margin-bottom: 12px; line-height: 1.5; }
-  .alert-success { background: rgba(63,185,80,.1);  color: var(--green); border: 1px solid rgba(63,185,80,.25); }
-  .alert-error   { background: rgba(248,81,73,.1);  color: var(--red);   border: 1px solid rgba(248,81,73,.25); }
-  .alert-info    { background: rgba(56,139,253,.1); color: var(--accent);border: 1px solid rgba(56,139,253,.25); }
+/* Form */
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:11px;color:var(--sub);margin-bottom:4px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.fg input,.fg textarea,.fg select{width:100%;padding:8px 11px;background:var(--card2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:14px;outline:none;font-family:inherit}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--accent)}
+.fg textarea{resize:vertical;min-height:130px;font-size:13px;line-height:1.6}
+.fg select option{background:var(--card2)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fhint{font-size:11px;color:var(--sub);margin-top:4px}
 
-  .loading { text-align: center; padding: 70px; color: var(--sub); font-size: 14px; }
-  .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .75s linear infinite; margin-right: 8px; vertical-align: middle; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .empty { text-align: center; padding: 80px 20px; color: var(--sub); }
-  .empty p { font-size: 14px; margin-top: 10px; }
+/* Alert */
+.alert{padding:9px 13px;border-radius:7px;font-size:13px;margin-bottom:12px;line-height:1.5}
+.a-ok{background:rgba(63,185,80,.1); color:var(--green);border:1px solid rgba(63,185,80,.25)}
+.a-err{background:rgba(248,81,73,.1);color:var(--red);  border:1px solid rgba(248,81,73,.25)}
+.a-inf{background:rgba(56,139,253,.1);color:var(--accent);border:1px solid rgba(56,139,253,.25)}
+
+.loading{text-align:center;padding:70px;color:var(--sub);font-size:14px}
+.spin{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .75s linear infinite;margin-right:8px;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:80px 20px;color:var(--sub)}
+.empty p{font-size:14px;margin-top:10px}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <span class="topbar-brand">📈 股票监测</span>
+  <span class="brand">📈 股票监测</span>
   <div class="tabs">
-    <button class="tab-btn active" id="tab-reports-btn" onclick="switchTab('reports')">
-      按报告日期
-      <span class="tab-count" id="tc-reports">0</span>
+    <button class="tab on" id="t-rep" onclick="switchTab('rep')">
+      按报告 <span class="tc" id="tc-rep">0</span>
     </button>
-    <button class="tab-btn" id="tab-tracking-btn" onclick="switchTab('tracking')">
-      标的跟踪
-      <span class="tab-count" id="tc-tracking">0</span>
+    <button class="tab" id="t-trk" onclick="switchTab('trk')">
+      标的跟踪 <span class="tc" id="tc-trk">0</span>
     </button>
   </div>
-  <div class="topbar-right">
-    <div class="search-wrap">
-      <input type="text" id="searchInput" placeholder="搜索名称或代码…" oninput="renderActive()">
-    </div>
-    <label class="toggle-pill" id="sell-toggle-wrap">
+  <div class="topbar-r">
+    <div class="srch"><input type="text" id="Q" placeholder="搜索名称或代码…" oninput="renderActive()"></div>
+    <label class="tog-wrap" id="sell-tog">
       <span>显示卖出</span>
-      <label class="toggle">
-        <input type="checkbox" id="showSell" onchange="renderActive()">
-        <span class="slider"></span>
-      </label>
+      <label class="tog"><input type="checkbox" id="showSell" onchange="renderActive()"><span class="sl"></span></label>
     </label>
-    <button class="btn btn-secondary" onclick="openManualModal()">+ 手动</button>
-    <button class="btn btn-primary" onclick="openSubmitModal()">提交报告</button>
+    <button class="btn btn-s" onclick="openManual()">+ 手动</button>
+    <button class="btn btn-p" onclick="openSubmit()">提交报告</button>
   </div>
 </div>
 
 <div class="main">
-  <div class="tab-panel active" id="tab-reports">
-    <div id="reports-content"><div class="loading"><span class="spinner"></span>加载中…</div></div>
+  <div class="pane on" id="pane-rep">
+    <div id="rep-body"><div class="loading"><span class="spin"></span>加载中…</div></div>
   </div>
-  <div class="tab-panel" id="tab-tracking">
-    <div class="tracking-toolbar">
-      <label>市场筛选</label>
-      <select id="trackMarketFilter" onchange="renderTracking()">
-        <option value="">全部市场</option>
+  <div class="pane" id="pane-trk">
+    <div class="trk-toolbar">
+      <label>市场</label>
+      <select id="trkMkt" onchange="renderTrk()">
+        <option value="">全部</option>
       </select>
       <label>排序</label>
-      <select id="trackSort" onchange="renderTracking()">
+      <select id="trkSort" onchange="renderTrk()">
         <option value="latest">最新更新</option>
-        <option value="gain_desc">涨幅最高</option>
-        <option value="gain_asc">跌幅最深</option>
-        <option value="days_desc">跟踪最久</option>
+        <option value="gain_d">涨幅最高</option>
+        <option value="gain_a">跌幅最深</option>
+        <option value="days">跟踪最久</option>
       </select>
     </div>
-    <div id="tracking-content"><div class="loading"><span class="spinner"></span>加载中…</div></div>
+    <div id="trk-body"><div class="loading"><span class="spin"></span>加载中…</div></div>
   </div>
 </div>
 
-<!-- ───────────── Submit Modal ───────────── -->
-<div class="modal-overlay hidden" id="submitModal">
+<!-- Submit -->
+<div class="ov h" id="submitOv">
   <div class="modal">
-    <div class="modal-head">
-      <h2>提交新报告</h2>
-      <button class="modal-close" onclick="closeModal('submitModal')">×</button>
-    </div>
-    <div class="modal-body">
-      <div id="submitAlert"></div>
-      <div class="form-group">
+    <div class="mhdr"><h2>提交新报告</h2><button class="mclose" onclick="closeOv('submitOv')">×</button></div>
+    <div class="mbody">
+      <div id="subAlert"></div>
+      <div class="fg">
         <label>粘贴报告原文</label>
-        <textarea id="submitText" placeholder="粘贴原始报告文本，格式不限，AI 自动解析…"></textarea>
-        <div class="form-hint">AI 自动识别市场/日期/来源/各标的字段。若 AI 不可用则降级为本地正则解析。</div>
+        <textarea id="subTxt" placeholder="粘贴原始报告文本，格式不限，AI 自动解析…"></textarea>
+        <div class="fhint">支持任意格式。AI 失败时自动降级本地正则解析。</div>
       </div>
-      <div class="form-group">
-        <label>提交密码</label>
-        <input type="password" id="submitPwd" placeholder="••••••••">
-      </div>
+      <div class="fg"><label>密码</label><input type="password" id="subPwd" placeholder="••••••••"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('submitModal')">取消</button>
-      <button class="btn btn-primary" id="submitBtn" onclick="doSubmit()">AI 解析并保存</button>
+    <div class="mfoot">
+      <button class="btn btn-s" onclick="closeOv('submitOv')">取消</button>
+      <button class="btn btn-p" id="subBtn" onclick="doSubmit()">AI 解析并保存</button>
     </div>
   </div>
 </div>
 
-<!-- ───────────── Manual Add Modal ───────────── -->
-<div class="modal-overlay hidden" id="manualModal">
+<!-- Manual -->
+<div class="ov h" id="manualOv">
   <div class="modal">
-    <div class="modal-head">
-      <h2>手动添加单只</h2>
-      <button class="modal-close" onclick="closeModal('manualModal')">×</button>
-    </div>
-    <div class="modal-body">
-      <div id="manualAlert"></div>
-      <div class="form-row">
-        <div class="form-group"><label>市场 *</label><input id="m_market" placeholder="港A"></div>
-        <div class="form-group"><label>日期 *</label><input id="m_date" type="date"></div>
+    <div class="mhdr"><h2>手动添加单只</h2><button class="mclose" onclick="closeOv('manualOv')">×</button></div>
+    <div class="mbody">
+      <div id="manAlert"></div>
+      <div class="fr">
+        <div class="fg"><label>市场 *</label><input id="m_mkt" placeholder="港A"></div>
+        <div class="fg"><label>日期 *</label><input id="m_dt" type="date"></div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>来源</label><input id="m_source" placeholder="利弗莫尔"></div>
-        <div class="form-group"><label>中文名称 *</label><input id="m_name" placeholder="兆易创新"></div>
+      <div class="fr">
+        <div class="fg"><label>来源</label><input id="m_src" placeholder="利弗莫尔"></div>
+        <div class="fg"><label>中文名称 *</label><input id="m_name" placeholder="兆易创新"></div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>交易所</label><input id="m_exchange" placeholder="HK / SH / SZ"></div>
-        <div class="form-group"><label>股票代码 *</label><input id="m_code" placeholder="03986"></div>
+      <div class="fr">
+        <div class="fg"><label>交易所</label><input id="m_ex" placeholder="HK / SH / SZ / US"></div>
+        <div class="fg"><label>股票代码 *</label><input id="m_code" placeholder="03986 / HOOD"></div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>上涨配置 %</label><input id="m_up" type="number" step="0.1" placeholder="6.0"></div>
-        <div class="form-group"><label>下跌配置 %</label><input id="m_down" type="number" step="0.1" placeholder="6.0"></div>
+      <div class="fr">
+        <div class="fg"><label>上涨配置 %<br><span class="fhint" style="text-transform:none">多头持仓比例</span></label><input id="m_up" type="number" step="0.1" placeholder="6.0"></div>
+        <div class="fg"><label>下跌配置 %<br><span class="fhint" style="text-transform:none">下跌对冲比例</span></label><input id="m_dn" type="number" step="0.1" placeholder="6.0"></div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>通道变化 · 从</label><input id="m_chfrom" placeholder="上涨趋势"></div>
-        <div class="form-group"><label>通道变化 · 到</label><input id="m_chto" placeholder="自然回调"></div>
+      <div class="fr">
+        <div class="fg"><label>通道变化 · 从</label><input id="m_cf" placeholder="上涨趋势"></div>
+        <div class="fg"><label>通道变化 · 到</label><input id="m_ct" placeholder="自然回调"></div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
+      <div class="fr">
+        <div class="fg">
           <label>价格类型</label>
-          <select id="m_ptype">
+          <select id="m_pt">
             <option value="">— 不填 —</option>
-            <option value="当前价格">当前价格</option>
-            <option value="关键价格">关键价格</option>
+            <option value="当前价格">当前价格（实时报价）</option>
+            <option value="关键价格">关键价格（支撑/压力位）</option>
           </select>
         </div>
-        <div class="form-group"><label>价格</label><input id="m_price" type="number" step="0.0001" placeholder="738.5"></div>
+        <div class="fg"><label>价格</label><input id="m_pv" type="number" step="0.0001" placeholder="738.5"></div>
       </div>
-      <div class="form-group"><label>价格锚定日期（关键价格时填）</label><input id="m_pdate" type="date"></div>
-      <div class="form-group"><label>提交密码 *</label><input type="password" id="m_pwd" placeholder="••••••••"></div>
+      <div class="fg"><label>价格锚定日期（关键价格时填）</label><input id="m_pd" type="date"></div>
+      <div class="fg"><label>密码 *</label><input type="password" id="m_pwd" placeholder="••••••••"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('manualModal')">取消</button>
-      <button class="btn btn-primary" id="manualBtn" onclick="doManual()">保存</button>
+    <div class="mfoot">
+      <button class="btn btn-s" onclick="closeOv('manualOv')">取消</button>
+      <button class="btn btn-p" id="manBtn" onclick="doManual()">保存</button>
     </div>
   </div>
 </div>
 
-<!-- ───────────── Delete Modal ───────────── -->
-<div class="modal-overlay hidden" id="deleteModal">
+<!-- Delete -->
+<div class="ov h" id="delOv">
   <div class="modal" style="max-width:380px">
-    <div class="modal-head">
-      <h2>确认删除</h2>
-      <button class="modal-close" onclick="closeModal('deleteModal')">×</button>
+    <div class="mhdr"><h2>确认删除</h2><button class="mclose" onclick="closeOv('delOv')">×</button></div>
+    <div class="mbody">
+      <div id="delAlert"></div>
+      <p style="font-size:13px;color:var(--sub);margin-bottom:12px;line-height:1.6" id="delDesc"></p>
+      <div class="fg"><label>密码</label><input type="password" id="delPwd" placeholder="••••••••"></div>
     </div>
-    <div class="modal-body">
-      <div id="deleteAlert"></div>
-      <p style="font-size:13px;color:var(--sub);margin-bottom:12px;line-height:1.6" id="deleteDesc"></p>
-      <div class="form-group"><label>密码</label><input type="password" id="deletePwd" placeholder="••••••••"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('deleteModal')">取消</button>
-      <button class="btn btn-danger" id="deleteConfirmBtn" onclick="doDelete()">确认删除</button>
+    <div class="mfoot">
+      <button class="btn btn-s" onclick="closeOv('delOv')">取消</button>
+      <button class="btn btn-d" id="delBtn" onclick="doDelete()">确认删除</button>
     </div>
   </div>
 </div>
 
 <script>
+// ─────────────────────────────────────────────────────────────────────────────
+// Signal classification
+// ─────────────────────────────────────────────────────────────────────────────
+
+// 4 signal types:
+//   SELL     channel_to = 下跌趋势
+//   RECOVER  channel_to = 自然回升  (bouncing back, purple)
+//   NEW_UP   channel_to = 上涨趋势  AND channel changed from something else
+//   HOLD     everything else (staying in current state, or normal pullback)
+
+function signal(item) {
+  const to   = (item.channel_to   || item.latest_channel_to   || '').trim();
+  const from = (item.channel_from || item.latest_channel_from || '').trim();
+  if (to.includes('下跌趋势')) return 'SELL';
+  if (to.includes('自然回升')) return 'RECOVER';
+  if (to.includes('上涨趋势') && from && from !== to) return 'NEW_UP';
+  return 'HOLD';
+}
+
+function chCls(s) {
+  if (!s) return 'ch-other';
+  if (s.includes('上涨')) return 'ch-up';
+  if (s.includes('下跌')) return 'ch-down';
+  if (s.includes('回升')) return 'ch-rec';
+  if (s.includes('回调')) return 'ch-nat';
+  return 'ch-other';
+}
+
+// Transition badge: only shown when state actually changes
+function transBadge(from, to) {
+  if (!from || !to || from === to) return ''; // no change, no badge
+  if (to.includes('下跌趋势'))    return '<span class="ch-trans ct-sell">转跌</span>';
+  if (to.includes('上涨趋势'))    return '<span class="ch-trans ct-up">转升</span>';
+  if (to.includes('自然回升'))    return '<span class="ch-trans ct-recover">回升</span>';
+  if (to.includes('自然回调'))    return '<span class="ch-trans ct-pullbk">回调</span>';
+  return '';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Allocation bias
+// ─────────────────────────────────────────────────────────────────────────────
+
+function biasBadge(up, dn) {
+  if (up == null || dn == null) return '';
+  const diff = up - dn;
+  if (diff >  0.5) return '<span class="bias bias-bull">多头偏向</span>';
+  if (diff < -0.5) return '<span class="bias bias-bear">防守偏向</span>';
+  return '<span class="bias bias-neu">均衡配置</span>';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────────────────────────────────────
+
 let allReports  = [];
 let allTracking = [];
-let currentTab  = 'reports';
-let pendingDelete = null;
-
-// ── Init ───────────────────────────────────────────────────────────────────────
+let currentTab  = 'rep';
+let pendingDel  = null;
 
 async function init() {
   await Promise.all([loadReports(), loadTracking()]);
@@ -402,11 +409,10 @@ async function loadReports() {
     const r = await fetch('/api/reports');
     if (!r.ok) throw new Error(await r.text());
     allReports = await r.json();
-    document.getElementById('tc-reports').textContent = allReports.length;
-    renderReports();
+    document.getElementById('tc-rep').textContent = allReports.length;
+    renderRep();
   } catch(e) {
-    document.getElementById('reports-content').innerHTML =
-      `<div class="alert alert-error">加载失败: ${esc(e.message)}</div>`;
+    document.getElementById('rep-body').innerHTML = err(e.message);
   }
 }
 
@@ -415,417 +421,420 @@ async function loadTracking() {
     const r = await fetch('/api/tracking');
     if (!r.ok) throw new Error(await r.text());
     allTracking = await r.json();
-    document.getElementById('tc-tracking').textContent = allTracking.length;
-
-    // Populate market filter
-    const markets = [...new Set(allTracking.map(t => t.market).filter(Boolean))].sort();
-    const sel = document.getElementById('trackMarketFilter');
-    markets.forEach(m => {
-      const o = document.createElement('option');
-      o.value = m; o.textContent = m;
-      sel.appendChild(o);
-    });
-    renderTracking();
+    document.getElementById('tc-trk').textContent = allTracking.length;
+    const markets = [...new Set(allTracking.map(t=>t.market).filter(Boolean))].sort();
+    const sel = document.getElementById('trkMkt');
+    // reset
+    while (sel.options.length > 1) sel.remove(1);
+    markets.forEach(m => { const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o); });
+    renderTrk();
   } catch(e) {
-    document.getElementById('tracking-content').innerHTML =
-      `<div class="alert alert-error">加载失败: ${esc(e.message)}</div>`;
+    document.getElementById('trk-body').innerHTML = err(e.message);
   }
 }
 
-// ── Tab switching ──────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Tab
+// ─────────────────────────────────────────────────────────────────────────────
 
-function switchTab(tab) {
-  currentTab = tab;
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById(`tab-${tab}-btn`).classList.add('active');
-  document.getElementById(`tab-${tab}`).classList.add('active');
-  // sell toggle only relevant for reports tab
-  document.getElementById('sell-toggle-wrap').style.display = tab === 'reports' ? '' : 'none';
+function switchTab(t) {
+  currentTab = t;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
+  document.getElementById('t-'+t).classList.add('on');
+  document.getElementById('pane-'+t).classList.add('on');
+  document.getElementById('sell-tog').style.display = t==='rep' ? '' : 'none';
 }
 
 function renderActive() {
-  if (currentTab === 'reports') renderReports();
-  else renderTracking();
+  if (currentTab==='rep') renderRep(); else renderTrk();
 }
 
-// ── Reports Tab ────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Reports tab
+// ─────────────────────────────────────────────────────────────────────────────
 
-function renderReports() {
-  const query    = document.getElementById('searchInput').value.trim().toLowerCase();
+function renderRep() {
+  const q        = document.getElementById('Q').value.trim().toLowerCase();
   const showSell = document.getElementById('showSell').checked;
-  const el       = document.getElementById('reports-content');
+  const el       = document.getElementById('rep-body');
   const today    = new Date().toISOString().slice(0,10);
 
   if (!allReports.length) {
-    el.innerHTML = `<div class="empty"><div style="font-size:44px">📋</div><p>暂无报告，点击右上角「提交报告」开始</p></div>`;
+    el.innerHTML = empty('📋','暂无报告，点击右上角「提交报告」开始');
     return;
   }
 
   let html = '';
-  for (const report of allReports) {
-    const items    = report.items || [];
-    const filtered = query ? items.filter(i =>
-      i.name?.toLowerCase().includes(query) || i.code?.toLowerCase().includes(query)
-    ) : items;
-    if (query && !filtered.length) continue;
+  for (const rep of allReports) {
+    const all = rep.items || [];
+    const items = q ? all.filter(i => i.name?.toLowerCase().includes(q) || i.code?.toLowerCase().includes(q)) : all;
+    if (q && !items.length) continue;
 
-    const rawDate = (report.report_date || '').slice(0,10);
+    const rawDate = (rep.report_date||'').slice(0,10);
     const isToday = rawDate === today;
 
-    const sell   = filtered.filter(isSell);
-    const normal = filtered.filter(i => !isSell(i));
+    // Group by signal type
+    const sells    = items.filter(i => signal(i) === 'SELL');
+    const recovers = items.filter(i => signal(i) === 'RECOVER');
+    const newUps   = items.filter(i => signal(i) === 'NEW_UP');
+    const holds    = items.filter(i => signal(i) === 'HOLD');
 
-    html += `<div class="report-card">
-      <div class="report-header">
-        <span class="rh-market">${esc(report.market)}</span>
-        <span class="rh-date">${rawDate}</span>
-        <span class="rh-age ${isToday ? 'today' : 'old'}">${daysAgo(rawDate)}</span>
-        <span class="rh-source">${esc(report.source)}</span>
-        <span class="rh-count">${filtered.length} 只</span>
-        <div class="rh-actions">
-          <button class="btn btn-danger btn-sm" onclick="confirmDelete(${report.id},'report','整个报告（含全部标的）')">删除</button>
+    // Summary counts
+    html += `<div class="rcard">
+      <div class="rhdr">
+        <span class="r-mkt">${esc(rep.market)}</span>
+        <span class="r-date">${rawDate}</span>
+        <span class="r-age ${isToday?'today':'old'}">${daysAgo(rawDate)}</span>
+        <span class="r-src">${esc(rep.source)}</span>
+        <div class="r-act">
+          <button class="btn btn-d btn-sm" onclick="confirmDel(${rep.id},'report','整个报告（含全部标的）')">删除</button>
         </div>
+      </div>
+      <div class="rsumm">
+        ${sells.length   ? `<div class="rsumm-pill s-sell"><span class="pill-n">${sells.length}</span><span class="lbl">卖出信号</span></div>` : ''}
+        ${newUps.length  ? `<div class="rsumm-pill s-up">  <span class="pill-n">${newUps.length}</span><span class="lbl">转升信号</span></div>` : ''}
+        ${recovers.length? `<div class="rsumm-pill s-hold"><span class="pill-n">${recovers.length}</span><span class="lbl">回升观察</span></div>` : ''}
+        <div class="rsumm-pill s-hold"><span class="pill-n">${holds.length}</span><span class="lbl">持仓观望</span></div>
       </div>`;
 
-    if (sell.length > 0) {
+    // SELL section
+    if (sells.length) {
       if (showSell) {
-        html += `<div class="section-label sell">⚠ 卖出信号 · 下跌趋势（${sell.length} 只）</div>`;
-        html += renderReportTable(sell);
+        html += `<div class="sec-hdr sec-sell">⚠ 卖出信号 · 通道进入下跌趋势（${sells.length} 只）</div>`;
+        html += tbl(sells);
       } else {
-        html += `<div class="sell-bar" onclick="document.getElementById('showSell').checked=true;renderReports()">
-          <span class="sell-bar-lbl">⚠ 卖出 ${sell.length} 只</span>
-          <span class="sell-bar-names">${sell.map(i=>esc(i.name)).join('、')}</span>
+        html += `<div class="sell-bar" onclick="document.getElementById('showSell').checked=true;renderRep()">
+          <span class="sell-bar-lbl">⚠ 卖出信号 ${sells.length} 只</span>
+          <span class="sell-bar-names">${sells.map(i=>esc(i.name)).join('、')}</span>
           <span class="sell-bar-hint">点击展开 ›</span>
         </div>`;
       }
     }
-    if (normal.length > 0) {
-      if (sell.length > 0 && showSell)
-        html += `<div class="section-label">持仓监测（${normal.length} 只）</div>`;
-      html += renderReportTable(normal);
+
+    // RECOVER section
+    if (recovers.length) {
+      html += `<div class="sec-hdr sec-recover">↗ 回升观察 · 通道进入自然回升（${recovers.length} 只）</div>`;
+      html += tbl(recovers);
     }
+
+    // NEW_UP section
+    if (newUps.length) {
+      html += `<div class="sec-hdr sec-up">▲ 转升信号 · 通道新进入上涨趋势（${newUps.length} 只）</div>`;
+      html += tbl(newUps);
+    }
+
+    // HOLD section
+    if (holds.length) {
+      const hasOtherSections = sells.length || recovers.length || newUps.length;
+      if (hasOtherSections) {
+        html += `<div class="sec-hdr sec-hold">持仓观望（${holds.length} 只）</div>`;
+      }
+      html += tbl(holds);
+    }
+
     html += `</div>`;
   }
 
-  el.innerHTML = html || `<div class="empty"><div style="font-size:44px">🔍</div><p>没有匹配「${esc(query)}」的结果</p></div>`;
+  el.innerHTML = html || empty('🔍', `没有匹配「${esc(q)}」的结果`);
 }
 
-function renderReportTable(items) {
+function tbl(items) {
   const rows = items.map(item => {
-    const sell = isSell(item);
+    const sig  = signal(item);
     const up   = item.up_pct   != null ? +item.up_pct   : null;
     const dn   = item.down_pct != null ? +item.down_pct : null;
-    const mx   = Math.max(up ?? 0, dn ?? 0, 1);
-    const isNewDown = sell;
-    const isNewUp   = (item.channel_to||'').includes('上涨') && !(item.channel_from||'').includes('上涨');
-    return `<tr class="${sell?'row-sell':''}">
+    const mx   = Math.max(up??0, dn??0, 0.1);
+
+    const from = item.channel_from || '';
+    const to   = item.channel_to   || '';
+    const changed = from && to && from !== to;
+
+    // Row highlight class
+    const rowCls = sig==='SELL' ? 'r-sell' : sig==='RECOVER' ? 'r-recover' : '';
+
+    // Name tag
+    const nameTag =
+      sig==='SELL'    ? '<span class="stag stag-sell">SELL</span>' :
+      sig==='NEW_UP'  ? '<span class="stag stag-new-up">新转升</span>' :
+      sig==='RECOVER' ? '<span class="stag stag-recover">回升中</span>' : '';
+
+    return `<tr class="${rowCls}">
       <td>
-        <div class="stock-name">${esc(item.name)}${sell?'<span class="sell-tag">SELL</span>':''}</div>
-        <div class="stock-code">${esc(item.exchange||'')}${item.exchange?'.':''}${esc(item.code)}</div>
+        <div class="sname">${esc(item.name)}${nameTag}</div>
+        <div class="scode">${esc(item.exchange||'')}${item.exchange?'.':''}${esc(item.code)}</div>
       </td>
       <td>
         <div class="alloc-row">
-          <span class="alloc-lbl">上涨配置</span>
-          <div class="alloc-bar-wrap"><div class="alloc-bar up" style="width:${up!=null?Math.round(up/mx*100):0}%"></div></div>
-          <span class="alloc-val up">${up!=null?up+'%':'—'}</span>
+          <span class="al-lbl">上涨配置</span>
+          <div class="al-bar"><div class="al-fill al-up" style="width:${up!=null?Math.round(up/mx*100):0}%"></div></div>
+          <span class="al-val up">${up!=null?up+'%':'—'}</span>
         </div>
         <div class="alloc-row">
-          <span class="alloc-lbl">下跌配置</span>
-          <div class="alloc-bar-wrap"><div class="alloc-bar down" style="width:${dn!=null?Math.round(dn/mx*100):0}%"></div></div>
-          <span class="alloc-val down">${dn!=null?dn+'%':'—'}</span>
+          <span class="al-lbl">下跌配置</span>
+          <div class="al-bar"><div class="al-fill al-dn" style="width:${dn!=null?Math.round(dn/mx*100):0}%"></div></div>
+          <span class="al-val dn">${dn!=null?dn+'%':'—'}</span>
         </div>
+        ${biasBadge(up,dn)}
       </td>
       <td>
-        <div class="channel-flow">
-          ${item.channel_from?`<span class="ch ${chCls(item.channel_from)}">${esc(item.channel_from)}</span>`:''}
-          ${item.channel_from&&item.channel_to?'<span class="ch-arrow">→</span>':''}
-          ${item.channel_to?`<span class="ch ${chCls(item.channel_to)}">${esc(item.channel_to)}</span>${isNewDown?'<span class="ch-new ch-new-down">转跌</span>':isNewUp?'<span class="ch-new ch-new-up">转升</span>':'`':'<span style="color:var(--sub)">—</span>'}
+        <div class="ch-flow">
+          ${from ? `<span class="ch ${chCls(from)}">${esc(from)}</span>` : ''}
+          ${changed ? '<span class="ch-arr">→</span>' : ''}
+          ${to ? `<span class="ch ${chCls(to)}">${esc(to)}</span>${transBadge(from,to)}` : '<span style="color:var(--sub)">—</span>'}
         </div>
       </td>
       <td>
         ${item.price!=null?`
-          <div><span class="price-type-tag ${item.price_type==='关键价格'?'pt-key':'pt-current'}">${esc(item.price_type||'价格')}</span></div>
-          <div class="price-val">${item.price}</div>
-          ${item.price_date?`<div class="price-date">锚定日 ${item.price_date}</div>`:''}
+          <div><span class="ptag ${item.price_type==='关键价格'?'pt-key':'pt-cur'}">${esc(item.price_type||'价格')}</span></div>
+          <div class="pval">${item.price}</div>
+          ${item.price_date?`<div class="pdate">锚定日 ${item.price_date}</div>`:''}
         `:'<span style="color:var(--sub)">—</span>'}
       </td>
       <td style="text-align:right">
-        <button class="btn btn-danger btn-sm" onclick="confirmDelete(${item.id},'item','${esc(item.name)}（${esc(item.code)}）')">删除</button>
+        <button class="btn btn-d btn-sm" onclick="confirmDel(${item.id},'item','${esc(item.name)}（${esc(item.code)}）')">删除</button>
       </td>
     </tr>`;
   }).join('');
 
-  return `<div class="table-wrap"><table>
+  return `<div class="twrap"><table>
     <thead><tr>
-      <th>标的<span class="th-sub">名称 / 代码</span></th>
-      <th>仓位配置<span class="th-sub">上涨持仓 / 下跌对冲</span></th>
-      <th>通道变化<span class="th-sub">本期状态迁移</span></th>
-      <th>参考价格<span class="th-sub">当前报价 或 关键支撑位</span></th>
+      <th>标的<span class="ts">名称 / 代码</span></th>
+      <th>仓位配置<span class="ts">上涨持仓 · 下跌对冲 · 整体倾向</span></th>
+      <th>通道变化<span class="ts">本期状态迁移（箭头仅在变化时出现）</span></th>
+      <th>参考价格<span class="ts">当前报价 或 关键支撑/压力位</span></th>
       <th></th>
     </tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
 
-// ── Tracking Tab ───────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Tracking tab
+// ─────────────────────────────────────────────────────────────────────────────
 
-function renderTracking() {
-  const query  = document.getElementById('searchInput').value.trim().toLowerCase();
-  const market = document.getElementById('trackMarketFilter').value;
-  const sort   = document.getElementById('trackSort').value;
-  const el     = document.getElementById('tracking-content');
+function renderTrk() {
+  const q   = document.getElementById('Q').value.trim().toLowerCase();
+  const mkt = document.getElementById('trkMkt').value;
+  const srt = document.getElementById('trkSort').value;
+  const el  = document.getElementById('trk-body');
 
   let data = allTracking.filter(t => {
-    if (query && !t.name?.toLowerCase().includes(query) && !t.code?.toLowerCase().includes(query)) return false;
-    if (market && t.market !== market) return false;
+    if (q && !t.name?.toLowerCase().includes(q) && !t.code?.toLowerCase().includes(q)) return false;
+    if (mkt && t.market !== mkt) return false;
     return true;
   });
 
-  // Sort
-  data = [...data].sort((a, b) => {
-    const retA = calcReturn(a), retB = calcReturn(b);
-    if (sort === 'gain_desc') return (retB ?? -Infinity) - (retA ?? -Infinity);
-    if (sort === 'gain_asc')  return (retA ?? Infinity)  - (retB ?? Infinity);
-    if (sort === 'days_desc') return (+b.days_tracked||0) - (+a.days_tracked||0);
-    // latest: already sorted by DB
+  data = [...data].sort((a,b) => {
+    const ra=calcRet(a), rb=calcRet(b);
+    if (srt==='gain_d') return (rb??-Infinity)-(ra??-Infinity);
+    if (srt==='gain_a') return (ra??Infinity) -(rb??Infinity);
+    if (srt==='days')   return (+b.days_tracked||0)-(+a.days_tracked||0);
     return 0;
   });
 
   if (!data.length) {
-    el.innerHTML = `<div class="empty"><div style="font-size:44px">📊</div><p>${query ? `没有匹配「${esc(query)}」的标的` : '暂无跟踪数据'}</p></div>`;
+    el.innerHTML = empty('📊', q ? `没有匹配「${esc(q)}」的标的` : '暂无跟踪数据');
     return;
   }
 
   // Group by market
-  const groups = {};
-  data.forEach(t => {
-    const m = t.market || '未知';
-    if (!groups[m]) groups[m] = [];
-    groups[m].push(t);
-  });
+  const grps = {};
+  data.forEach(t => { const m=t.market||'未知'; (grps[m]=grps[m]||[]).push(t); });
 
   let html = '';
-  for (const [mkt, items] of Object.entries(groups)) {
-    html += `<div class="tracking-card">
-      <div class="tracking-header">
-        <span class="rh-market">${esc(mkt)}</span>
-        <span style="font-size:12px;color:var(--sub)">${items.length} 只标的在跟踪</span>
+  for (const [mkt2, items] of Object.entries(grps)) {
+    html += `<div class="rcard">
+      <div class="rhdr">
+        <span class="r-mkt">${esc(mkt2)}</span>
+        <span style="font-size:12px;color:var(--sub)">${items.length} 只标的</span>
       </div>
-      <div class="table-wrap"><table>
+      <div class="twrap"><table>
         <thead><tr>
-          <th>标的<span class="th-sub">名称 / 代码</span></th>
-          <th>跟踪期间涨幅<span class="th-sub">首次记录价 → 最新价</span></th>
-          <th>价格明细<span class="th-sub">首次 / 最新</span></th>
-          <th>当前通道<span class="th-sub">最新状态</span></th>
-          <th>跟踪周期<span class="th-sub">首次记录 → 最新</span></th>
-          <th>历史通道<span class="th-sub">状态变化时序</span></th>
+          <th>标的<span class="ts">名称 / 代码</span></th>
+          <th>跟踪期间涨幅<span class="ts">首次记录价 → 最新价</span></th>
+          <th>价格明细<span class="ts">首次 / 最新（含价格类型）</span></th>
+          <th>当前通道<span class="ts">最新一期状态</span></th>
+          <th>跟踪记录<span class="ts">首次记录 → 最新 · 共几次</span></th>
+          <th>状态时序<span class="ts">每次记录的通道颜色</span></th>
         </tr></thead>
         <tbody>`;
 
     for (const t of items) {
-      const ret = calcReturn(t);
-      const retStr  = ret != null ? (ret >= 0 ? '+' : '') + ret.toFixed(2) + '%' : '—';
-      const retCls  = ret == null ? 'neu' : ret > 0 ? 'pos' : ret < 0 ? 'neg' : 'neu';
-      const chSell  = (t.latest_channel_to||'').includes('下跌趋势');
-      const snaps   = t.snapshots || [];
-      const firstDate = (t.first_date||'').slice(0,10);
-      const latestDate= (t.latest_date||'').slice(0,10);
-      const days = (+t.days_tracked||0);
+      const ret      = calcRet(t);
+      const retStr   = ret!=null ? (ret>=0?'+':'')+ret.toFixed(2)+'%' : '—';
+      const retCls   = ret==null?'neu':ret>0?'pos':ret<0?'neg':'neu';
+      const sig      = signal(t);
+      const rowCls   = sig==='SELL'?'r-sell':sig==='RECOVER'?'r-recover':'';
+      const fd       = (t.first_date ||'').slice(0,10);
+      const ld       = (t.latest_date||'').slice(0,10);
+      const nameTag  =
+        sig==='SELL'    ? '<span class="stag stag-sell">SELL</span>'     :
+        sig==='RECOVER' ? '<span class="stag stag-recover">回升中</span>' : '';
 
-      html += `<tr class="${chSell?'row-sell':''}">
+      html += `<tr class="${rowCls}">
         <td>
-          <div class="stock-name">${esc(t.name)}${chSell?'<span class="sell-tag">SELL</span>':''}</div>
-          <div class="stock-code">${esc(t.exchange||'')}${t.exchange?'.':''}${esc(t.code)}</div>
-        </td>
-        <td class="ret-cell">
-          <div class="ret-val ${retCls}">${retStr}</div>
-          ${ret != null ? `<div class="ret-detail">${+t.first_price} → ${+t.latest_price}</div>` : '<div class="ret-detail">价格数据不足</div>'}
+          <div class="sname">${esc(t.name)}${nameTag}</div>
+          <div class="scode">${esc(t.exchange||'')}${t.exchange?'.':''}${esc(t.code)}</div>
         </td>
         <td>
-          ${t.first_price != null ? `
-            <div style="font-size:11px;color:var(--sub);margin-bottom:2px">首次（${firstDate}）</div>
+          <div class="ret ${retCls}">${retStr}</div>
+          ${ret!=null?`<div class="ret-sub">${+t.first_price} → ${+t.latest_price}</div>`:`<div class="ret-sub">价格数据不足</div>`}
+        </td>
+        <td>
+          ${t.first_price!=null?`
+            <div style="font-size:11px;color:var(--sub);margin-bottom:2px">首次（${fd}）</div>
             <div style="font-size:13px;font-weight:600;font-family:monospace">${+t.first_price}
-              <span class="price-type-tag ${t.first_price_type==='关键价格'?'pt-key':'pt-current'}" style="font-size:9px">${esc(t.first_price_type||'价格')}</span>
-            </div>
-          ` : '<span style="color:var(--sub);font-size:12px">首次无价格</span>'}
-          ${t.latest_price != null ? `
-            <div style="font-size:11px;color:var(--sub);margin:6px 0 2px">最新（${latestDate}）</div>
+              <span class="ptag ${t.first_price_type==='关键价格'?'pt-key':'pt-cur'}" style="font-size:9px">${esc(t.first_price_type||'价格')}</span>
+            </div>`:'<span style="color:var(--sub);font-size:12px">首次无价格</span>'}
+          ${t.latest_price!=null?`
+            <div style="font-size:11px;color:var(--sub);margin:5px 0 2px">最新（${ld}）</div>
             <div style="font-size:13px;font-weight:600;font-family:monospace">${+t.latest_price}
-              <span class="price-type-tag ${t.latest_price_type==='关键价格'?'pt-key':'pt-current'}" style="font-size:9px">${esc(t.latest_price_type||'价格')}</span>
-            </div>
-          ` : ''}
+              <span class="ptag ${t.latest_price_type==='关键价格'?'pt-key':'pt-cur'}" style="font-size:9px">${esc(t.latest_price_type||'价格')}</span>
+            </div>`:''}
         </td>
         <td>
-          <div class="channel-flow">
-            ${t.latest_channel_from ? `<span class="ch ${chCls(t.latest_channel_from)}">${esc(t.latest_channel_from)}</span><span class="ch-arrow">→</span>` : ''}
-            ${t.latest_channel_to   ? `<span class="ch ${chCls(t.latest_channel_to)}">${esc(t.latest_channel_to)}</span>` : '<span style="color:var(--sub)">—</span>'}
+          <div class="ch-flow">
+            ${t.latest_channel_from?`<span class="ch ${chCls(t.latest_channel_from)}">${esc(t.latest_channel_from)}</span><span class="ch-arr">→</span>`:''}
+            ${t.latest_channel_to?`<span class="ch ${chCls(t.latest_channel_to)}">${esc(t.latest_channel_to)}</span>`:'<span style="color:var(--sub)">—</span>'}
           </div>
         </td>
         <td style="white-space:nowrap">
-          <div>${firstDate}</div>
-          <div style="font-size:11px;color:var(--sub);margin:2px 0">↓</div>
-          <div>${latestDate}</div>
-          <div style="margin-top:4px"><span class="days-badge">${days} 次记录</span></div>
+          <div style="font-size:12px">${fd}</div>
+          <div style="font-size:10px;color:var(--sub);margin:1px 0">↓</div>
+          <div style="font-size:12px">${ld}</div>
+          <div style="margin-top:4px"><span class="days-tag">${+t.days_tracked} 次记录</span></div>
         </td>
-        <td>${renderSparkline(snaps)}</td>
+        <td>${spark(t.snapshots||[])}</td>
       </tr>`;
     }
-
     html += `</tbody></table></div></div>`;
   }
 
   el.innerHTML = html;
 }
 
-function calcReturn(t) {
-  const fp = t.first_price  != null ? +t.first_price  : null;
-  const lp = t.latest_price != null ? +t.latest_price : null;
-  if (fp == null || lp == null || fp === 0) return null;
-  return (lp - fp) / fp * 100;
+function calcRet(t) {
+  const fp = t.first_price !=null ? +t.first_price  : null;
+  const lp = t.latest_price!=null ? +t.latest_price : null;
+  if (fp==null||lp==null||fp===0) return null;
+  return (lp-fp)/fp*100;
 }
 
-function renderSparkline(snaps) {
-  if (!snaps || snaps.length === 0) return '<span style="color:var(--sub);font-size:11px">—</span>';
-
-  // Build color-coded dots for each snapshot's channel_to
-  const dots = snaps.map(s => {
-    const cls = chCls(s.channel_to || '');
-    const colors = { 'ch-up': '#3fb950', 'ch-down': '#f85149', 'ch-nat': '#d29922', 'ch-other': '#7d8590' };
-    const color = colors[cls] || '#7d8590';
-    const date  = (s.date||'').slice(0,10);
-    const tip   = `${date}: ${s.channel_to||'—'}${s.price!=null?' · '+s.price:''}`;
-    return `<div class="spark-dot" style="background:${color};height:${s.channel_to?.includes('上涨')?'20px':s.channel_to?.includes('下跌')?'8px':'14px'}"
-      data-tip="${esc(tip)}"></div>`;
+function spark(snaps) {
+  if (!snaps||!snaps.length) return '<span style="color:var(--sub);font-size:11px">—</span>';
+  const colors = {'ch-up':'#3fb950','ch-down':'#f85149','ch-rec':'#a371f7','ch-nat':'#d29922','ch-other':'#7d8590'};
+  const dots = snaps.map(s=>{
+    const cls   = chCls(s.channel_to||'');
+    const color = colors[cls]||'#7d8590';
+    const h     = s.channel_to?.includes('上涨')?'20px':s.channel_to?.includes('下跌')?'6px':s.channel_to?.includes('回升')?'16px':'12px';
+    const tip   = `${(s.date||'').slice(0,10)}: ${s.channel_to||'—'}${s.price!=null?' · '+s.price:''}`;
+    return `<div class="sd" style="background:${color};height:${h}" data-tip="${esc(tip)}"></div>`;
   }).join('');
-
-  return `<div class="spark" title="通道状态时序（绿=上涨 黄=回调 红=下跌）">${dots}</div>
-    <div style="font-size:10px;color:var(--sub);margin-top:2px">↑绿 黄回调 ↓红</div>`;
+  return `<div class="spark" title="通道时序（hover 看详情）">${dots}</div>
+    <div style="font-size:10px;color:var(--sub);margin-top:2px;white-space:nowrap">绿↑ 紫↗ 黄回调 红↓</div>`;
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
-
-function isSell(item) { return (item.channel_to||'').includes('下跌趋势'); }
-
-function chCls(s) {
-  if (!s) return 'ch-other';
-  if (s.includes('上涨')) return 'ch-up';
-  if (s.includes('下跌')) return 'ch-down';
-  if (s.includes('回调') || s.includes('回升')) return 'ch-nat';
-  return 'ch-other';
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
 
 function daysAgo(d) {
   if (!d) return '';
-  const diff = Math.round((Date.now() - new Date(d).getTime()) / 86400000);
-  if (diff === 0) return '今日';
-  if (diff === 1) return '昨日';
-  return `${diff}天前`;
+  const n = Math.round((Date.now()-new Date(d).getTime())/86400000);
+  if (n===0) return '今日'; if (n===1) return '昨日'; return n+'天前';
 }
-
 function esc(s) {
-  if (s == null) return '';
+  if (s==null) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+function err(msg)  { return `<div class="alert a-err" style="margin:20px">加载失败: ${esc(msg)}</div>`; }
+function empty(ic,msg) { return `<div class="empty"><div style="font-size:44px">${ic}</div><p>${esc(msg)}</p></div>`; }
+function showAlert(el,t,m){ el.innerHTML=`<div class="alert a-${t}">${esc(m)}</div>`; }
 
-// ── Modals & actions ───────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Modal
+// ─────────────────────────────────────────────────────────────────────────────
 
-function openSubmitModal() {
-  document.getElementById('submitText').value = '';
-  document.getElementById('submitPwd').value  = '';
-  document.getElementById('submitAlert').innerHTML = '';
-  showModal('submitModal');
-}
-function openManualModal() {
-  document.getElementById('m_date').value = new Date().toISOString().slice(0,10);
-  document.getElementById('manualAlert').innerHTML = '';
-  showModal('manualModal');
-}
-function showModal(id)  { document.getElementById(id).classList.remove('hidden'); }
-function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+function openSubmit(){ reset('subAlert','subTxt','subPwd'); showOv('submitOv'); }
+function openManual(){ document.getElementById('m_dt').value=new Date().toISOString().slice(0,10); reset('manAlert'); showOv('manualOv'); }
+function showOv(id)  { document.getElementById(id).classList.remove('h'); }
+function closeOv(id) { document.getElementById(id).classList.add('h'); }
+function reset(...ids){ ids.forEach(id=>{ const e=document.getElementById(id); if(e){ if(e.tagName==='INPUT'||e.tagName==='TEXTAREA') e.value=''; else e.innerHTML=''; }}); }
 
 async function doSubmit() {
-  const text = document.getElementById('submitText').value.trim();
-  const pwd  = document.getElementById('submitPwd').value;
-  const al   = document.getElementById('submitAlert');
-  const btn  = document.getElementById('submitBtn');
-  if (!text) return showAlert(al,'error','请先粘贴报告文本');
-  if (!pwd)  return showAlert(al,'error','请输入密码');
-  btn.disabled = true; btn.textContent = '解析中…';
-  showAlert(al,'info','正在 AI 解析，通常需要 5–15 秒…');
+  const txt=document.getElementById('subTxt').value.trim();
+  const pwd=document.getElementById('subPwd').value;
+  const al=document.getElementById('subAlert');
+  const btn=document.getElementById('subBtn');
+  if (!txt) return showAlert(al,'err','请先粘贴报告文本');
+  if (!pwd) return showAlert(al,'err','请输入密码');
+  btn.disabled=true; btn.textContent='解析中…';
+  showAlert(al,'inf','正在 AI 解析，通常需要 5–15 秒…');
   try {
-    const r = await fetch('/api/reports',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,password:pwd})});
-    const d = await r.json();
-    if (!r.ok) throw new Error(d.error||r.statusText);
-    showAlert(al,'success',`✓ 保存成功（${d.usedAI?'AI 解析':'本地兜底'}）—— 新增 ${d.inserted} 条，跳过 ${d.skipped} 条重复`);
-    await Promise.all([loadReports(), loadTracking()]);
-    setTimeout(()=>closeModal('submitModal'),2000);
-  } catch(e) { showAlert(al,'error',e.message); }
-  finally { btn.disabled=false; btn.textContent='AI 解析并保存'; }
+    const r=await fetch('/api/reports',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:txt,password:pwd})});
+    const d=await r.json(); if (!r.ok) throw new Error(d.error||r.statusText);
+    showAlert(al,'ok',`✓ 保存成功（${d.usedAI?'AI':'本地兜底'}）—— 新增 ${d.inserted} 条，跳过 ${d.skipped} 条重复`);
+    await Promise.all([loadReports(),loadTracking()]);
+    setTimeout(()=>closeOv('submitOv'),2000);
+  } catch(e){ showAlert(al,'err',e.message); }
+  finally{ btn.disabled=false; btn.textContent='AI 解析并保存'; }
 }
 
 async function doManual() {
-  const al  = document.getElementById('manualAlert');
-  const btn = document.getElementById('manualBtn');
-  const body = {
-    market:document.getElementById('m_market').value.trim(),
-    report_date:document.getElementById('m_date').value,
-    source:document.getElementById('m_source').value.trim()||'手动',
+  const al=document.getElementById('manAlert');
+  const btn=document.getElementById('manBtn');
+  const body={
+    market:document.getElementById('m_mkt').value.trim(),
+    report_date:document.getElementById('m_dt').value,
+    source:document.getElementById('m_src').value.trim()||'手动',
     name:document.getElementById('m_name').value.trim(),
-    exchange:document.getElementById('m_exchange').value.trim(),
+    exchange:document.getElementById('m_ex').value.trim(),
     code:document.getElementById('m_code').value.trim(),
     up_pct:document.getElementById('m_up').value||null,
-    down_pct:document.getElementById('m_down').value||null,
-    channel_from:document.getElementById('m_chfrom').value.trim(),
-    channel_to:document.getElementById('m_chto').value.trim(),
-    price_type:document.getElementById('m_ptype').value||null,
-    price:document.getElementById('m_price').value||null,
-    price_date:document.getElementById('m_pdate').value||null,
+    down_pct:document.getElementById('m_dn').value||null,
+    channel_from:document.getElementById('m_cf').value.trim(),
+    channel_to:document.getElementById('m_ct').value.trim(),
+    price_type:document.getElementById('m_pt').value||null,
+    price:document.getElementById('m_pv').value||null,
+    price_date:document.getElementById('m_pd').value||null,
     password:document.getElementById('m_pwd').value,
   };
-  if (!body.market||!body.report_date||!body.code||!body.name) return showAlert(al,'error','市场、日期、代码、名称为必填项');
-  if (!body.password) return showAlert(al,'error','请输入密码');
+  if (!body.market||!body.report_date||!body.code||!body.name) return showAlert(al,'err','市场、日期、代码、名称为必填项');
+  if (!body.password) return showAlert(al,'err','请输入密码');
   btn.disabled=true; btn.textContent='保存中…';
   try {
-    const r = await fetch('/api/items',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    const d = await r.json();
-    if (!r.ok) throw new Error(d.error||r.statusText);
-    showAlert(al,'success','✓ 添加成功');
-    await Promise.all([loadReports(), loadTracking()]);
-    setTimeout(()=>closeModal('manualModal'),1200);
-  } catch(e) { showAlert(al,'error',e.message); }
-  finally { btn.disabled=false; btn.textContent='保存'; }
+    const r=await fetch('/api/items',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json(); if (!r.ok) throw new Error(d.error||r.statusText);
+    showAlert(al,'ok','✓ 添加成功');
+    await Promise.all([loadReports(),loadTracking()]);
+    setTimeout(()=>closeOv('manualOv'),1200);
+  } catch(e){ showAlert(al,'err',e.message); }
+  finally{ btn.disabled=false; btn.textContent='保存'; }
 }
 
-function confirmDelete(id,type,label) {
-  pendingDelete={id,type};
-  document.getElementById('deleteDesc').textContent=`确定删除「${label}」？此操作不可撤销。`;
-  document.getElementById('deletePwd').value='';
-  document.getElementById('deleteAlert').innerHTML='';
-  showModal('deleteModal');
+function confirmDel(id,type,label) {
+  pendingDel={id,type};
+  document.getElementById('delDesc').textContent=`确定删除「${label}」？此操作不可撤销。`;
+  document.getElementById('delPwd').value='';
+  document.getElementById('delAlert').innerHTML='';
+  showOv('delOv');
 }
 async function doDelete() {
-  const pwd = document.getElementById('deletePwd').value;
-  const al  = document.getElementById('deleteAlert');
-  const btn = document.getElementById('deleteConfirmBtn');
-  if (!pwd) return showAlert(al,'error','请输入密码');
+  const pwd=document.getElementById('delPwd').value;
+  const al=document.getElementById('delAlert');
+  const btn=document.getElementById('delBtn');
+  if (!pwd) return showAlert(al,'err','请输入密码');
   btn.disabled=true;
   try {
-    const r = await fetch('/api/items',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({...pendingDelete,password:pwd})});
-    const d = await r.json();
-    if (!r.ok) throw new Error(d.error||r.statusText);
-    closeModal('deleteModal');
-    await Promise.all([loadReports(), loadTracking()]);
-  } catch(e) { showAlert(al,'error',e.message); btn.disabled=false; }
+    const r=await fetch('/api/items',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({...pendingDel,password:pwd})});
+    const d=await r.json(); if (!r.ok) throw new Error(d.error||r.statusText);
+    closeOv('delOv');
+    await Promise.all([loadReports(),loadTracking()]);
+  } catch(e){ showAlert(al,'err',e.message); btn.disabled=false; }
 }
 
-function showAlert(el,type,msg) {
-  el.innerHTML=`<div class="alert alert-${type}">${esc(msg)}</div>`;
-}
-
-document.querySelectorAll('.modal-overlay').forEach(o=>{
-  o.addEventListener('click',e=>{ if(e.target===o) o.classList.add('hidden'); });
-});
+document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.add('h')}));
 
 init();
 </script>

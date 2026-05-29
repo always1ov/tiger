@@ -43,7 +43,9 @@ Output ONLY valid JSON with no markdown fences, no comments, no explanation.
 Possible values (normalize to exactly these strings):
 - "上涨趋势"  — uptrend, bullish
 - "自然回调"  — natural pullback in uptrend, neutral/mild bearish
+- "次级回调"  — secondary/minor pullback in uptrend
 - "自然回升"  — natural bounce in downtrend, cautiously bullish
+- "次级回升"  — secondary/minor bounce in downtrend
 - "下跌趋势"  — downtrend, bearish SELL signal
 
 If text shows "通道变化: X => Y":

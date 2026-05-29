@@ -455,7 +455,7 @@ function signal(item) {
   const to   = (item.channel_to   || item.latest_channel_to   || '').trim();
   const from = (item.channel_from || item.latest_channel_from || '').trim();
   if (to.includes('下跌趋势')) return 'SELL';
-  if (to.includes('自然回升')) return 'RECOVER';
+  if (to.includes('自然回升') || to.includes('次级回升')) return 'RECOVER';
   if (to.includes('上涨趋势') && from && from !== to) return 'NEW_UP';
   return 'HOLD';
 }
@@ -474,7 +474,9 @@ function transBadge(from, to) {
   if (!from || !to || from === to) return ''; // no change, no badge
   if (to.includes('下跌趋势'))    return '<span class="ch-trans ct-sell">转跌</span>';
   if (to.includes('上涨趋势'))    return '<span class="ch-trans ct-up">转升</span>';
+  if (to.includes('次级回升'))    return '<span class="ch-trans ct-recover">次级回升</span>';
   if (to.includes('自然回升'))    return '<span class="ch-trans ct-recover">回升</span>';
+  if (to.includes('次级回调'))    return '<span class="ch-trans ct-pullbk">次级回调</span>';
   if (to.includes('自然回调'))    return '<span class="ch-trans ct-pullbk">回调</span>';
   return '';
 }

@@ -28,6 +28,20 @@ async function initDb() {
     UNIQUE (market, report_date, source)
   `.catch(() => {});
 
+  // Ensure stocks unique constraint exists (for existing deployments)
+  await sql`
+    ALTER TABLE stocks
+    ADD CONSTRAINT IF NOT EXISTS stocks_exchange_code_key
+    UNIQUE (exchange, code)
+  `.catch(() => {});
+
+  // Ensure snapshots unique constraint exists (for existing deployments)
+  await sql`
+    ALTER TABLE snapshots
+    ADD CONSTRAINT IF NOT EXISTS snapshots_stock_id_report_date_key
+    UNIQUE (stock_id, report_date)
+  `.catch(() => {});
+
   // ── stocks: one row per unique stock (exchange + code) ─────────────────────
   await sql`
     CREATE TABLE IF NOT EXISTS stocks (

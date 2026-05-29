@@ -158,27 +158,18 @@ def us_date() -> str:
 
 # ── 价格获取 ──────────────────────────────────────────────────────────────────
 
-def _get_price(ths, market_fn, thscode: str, market_key: str) -> tuple:
-    """实时行情优先，无数据时用日K线兜底。返回 (price, date_str|None)。"""
-    resp = market_fn(thscode, "基础数据")
-    if resp and resp.data:
-        d = resp.data[0]
-        price = d.get("价格")
-        if price:
-            return float(price), None
-
-    # 兜底：日K线取最近收盘价
+def _get_price(ths, _fn, thscode: str, _market: str) -> tuple:
+    """用日K线取最近交易日收盘价，港美A通吃，周末节假日也能跑。"""
     try:
         k = ths.klines(thscode, interval="day", count=5, adjust="forward")
         if k and k.df is not None and not k.df.empty:
-            last = k.df.iloc[-1]
-            price = last.get("收盘价")
-            date  = str(last.get("时间", ""))[:10]
+            last  = k.df.iloc[-1]
+            price = last["收盘价"]
+            date  = str(last["时间"])[:10]
             if price:
                 return float(price), date or None
     except Exception as e:
         print(f"    klines({thscode}) 失败: {e}")
-
     return None, None
 
 
@@ -189,12 +180,9 @@ def _update(conn, stocks: list[dict], market_key: str, tag: str, price_date: str
         print(f"{tag} 无标的，跳过")
         return
 
-    fn_map = {"cn": "market_data_cn", "hk": "market_data_hk", "us": "market_data_us"}
-    fn_name = fn_map[market_key]
     ok = 0
 
     with THS() as ths:
-        fn = getattr(ths, fn_name)
         for s in stocks:
             thscode = resolve_thscode(ths, s)
             if not thscode:
@@ -206,7 +194,7 @@ def _update(conn, stocks: list[dict], market_key: str, tag: str, price_date: str
                 save_thscode(conn, s["id"], thscode)
 
             try:
-                price, actual_date = _get_price(ths, fn, thscode, market_key)
+                price, actual_date = _get_price(ths, None, thscode, market_key)
                 if price:
                     write_price(conn, s["id"], price, actual_date or price_date)
                     print(f"  ✅ {s['name']} ({thscode}): {price}  [{actual_date or price_date}]")

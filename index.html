@@ -65,8 +65,13 @@ input:checked+.sl:before{transform:translateX(15px)}
 
 /* ── Report card ── */
 .rcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:18px;overflow:hidden}
+.rcard .rbody{display:none}
+.rcard.open .rbody{display:block}
 
-.rhdr{padding:11px 16px;background:var(--card2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.rhdr{padding:11px 16px;background:var(--card2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;flex-wrap:wrap;cursor:pointer;user-select:none}
+.rhdr:hover{background:var(--card2);filter:brightness(1.08)}
+.rhdr .chev{margin-left:auto;font-size:13px;color:var(--sub);transition:transform .2s;transform:rotate(0deg)}
+.rcard.open .rhdr .chev{transform:rotate(180deg)}
 .r-mkt{background:var(--accent);color:#fff;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700}
 .r-date{font-size:15px;font-weight:700}
 .r-age{font-size:11px;padding:1px 7px;border-radius:10px;font-weight:600}
@@ -82,7 +87,8 @@ input:checked+.sl:before{transform:translateX(15px)}
 .mkt-cnt{font-size:12px;color:var(--sub);background:var(--card2);border:1px solid var(--border);padding:1px 7px;border-radius:10px}
 
 /* ── Report summary bar ── */
-.rsumm{display:flex;align-items:center;gap:0;border-bottom:1px solid var(--border)}
+.rsumm{display:flex;align-items:center;gap:0}
+.rcard.open .rsumm{border-bottom:1px solid var(--border)}
 .rsumm-pill{display:flex;align-items:center;gap:6px;padding:7px 14px;font-size:12px;font-weight:600;border-right:1px solid var(--border);flex-shrink:0}
 .rsumm-pill:last-child{border-right:none}
 .pill-n{font-size:15px;font-weight:800}
@@ -507,18 +513,21 @@ function renderRep() {
     const allRecovers = allItemsForDate.filter(i => signal(i) === 'RECOVER');
     const allHolds    = allItemsForDate.filter(i => signal(i) === 'HOLD');
 
-    html += `<div class="rcard">
-      <div class="rhdr">
+    const cardId = `dc-${date}`;
+    html += `<div class="rcard ${isToday?'open':''}" id="${cardId}">
+      <div class="rhdr" onclick="toggleDateCard('${cardId}')">
         <span class="r-date">${date}</span>
         <span class="r-age ${isToday?'today':'old'}">${daysAgo(date)}</span>
         <span style="font-size:12px;color:var(--sub)">${reports.length} 份报告 · ${allItemsForDate.length} 只标的</span>
+        <span class="chev">▼</span>
       </div>
       <div class="rsumm">
         ${allSells.length    ? `<div class="rsumm-pill s-sell"><span class="pill-n">${allSells.length}</span><span class="lbl">卖出信号</span></div>` : ''}
         ${allNewUps.length   ? `<div class="rsumm-pill s-up"><span class="pill-n">${allNewUps.length}</span><span class="lbl">转升信号</span></div>` : ''}
         ${allRecovers.length ? `<div class="rsumm-pill s-hold"><span class="pill-n">${allRecovers.length}</span><span class="lbl">回升观察</span></div>` : ''}
         <div class="rsumm-pill s-hold"><span class="pill-n">${allHolds.length}</span><span class="lbl">持仓观望</span></div>
-      </div>`;
+      </div>
+      <div class="rbody">`;
 
     // ── Per-market sub-sections ───────────────────────────────────────────────
     for (const rep of reports) {
@@ -572,7 +581,7 @@ function renderRep() {
       }
     }
 
-    html += `</div>`; // close date card
+    html += `</div></div>`; // close rbody + date card
   }
 
   el.innerHTML = html || empty('🔍', `没有匹配「${esc(q)}」的结果`);
@@ -786,6 +795,10 @@ function spark(snaps) {
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
+function toggleDateCard(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
 function daysAgo(d) {
   if (!d) return '';
   const n = Math.round((Date.now()-new Date(d).getTime())/86400000);

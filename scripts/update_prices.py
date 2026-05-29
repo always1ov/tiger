@@ -126,10 +126,9 @@ def update_prices(conn, updates: list[tuple], price_date: str):
 
 
 def extract_price(row: dict) -> float | None:
-    """兼容不同 THS SDK 版本的字段名"""
-    for key in ("最新价", "收盘价", "close", "Close", "price", "Price"):
+    for key in ("最新价", "收盘价", "现价", "close", "Close", "price", "Price", "last"):
         v = row.get(key)
-        if v is not None:
+        if v is not None and str(v) not in ("", "nan", "None", "--"):
             try:
                 return float(v)
             except (ValueError, TypeError):
@@ -138,9 +137,9 @@ def extract_price(row: dict) -> float | None:
 
 
 def extract_thscode(row: dict) -> str:
-    for key in ("THSCODE", "thscode", "代码", "code", "Code"):
+    for key in ("THSCODE", "thscode", "股票代码", "代码", "code", "Code", "symbol"):
         v = row.get(key)
-        if v:
+        if v and str(v) not in ("", "nan", "None"):
             return str(v)
     return ""
 
@@ -267,19 +266,25 @@ def _batch_update(conn, code_map: dict, method: str, tag: str, price_date: str):
             try:
                 print(f"  发送 THSCODE: {batch}")
                 resp = fn(batch, "基础数据")
-                print(f"  resp.data 类型: {type(resp.data)}, 值: {resp.data}")
-                rows = resp.data or []
+                df = resp.df
+                if df is None or df.empty:
+                    print(f"  批次 {i//BATCH_SIZE + 1}: 返回空 DataFrame，THSCODE 格式可能有误")
+                    print(f"  resp.df columns: {list(df.columns) if df is not None else 'None'}")
+                    continue
+                print(f"  DataFrame 列名: {list(df.columns)}")
+                print(f"  DataFrame 前两行:\n{df.head(2).to_string()}")
                 batch_ok = 0
-                for row in rows:
-                    thscode = extract_thscode(row)
-                    price   = extract_price(row)
+                for _, row in df.iterrows():
+                    row_dict = row.to_dict()
+                    thscode  = extract_thscode(row_dict)
+                    price    = extract_price(row_dict)
                     if not thscode or price is None:
                         continue
                     stock_id = code_map.get(thscode)
                     if stock_id:
                         updates.append((stock_id, price))
                         batch_ok += 1
-                print(f"  批次 {i//BATCH_SIZE + 1}: {len(batch)} 只请求，{batch_ok} 只有价格")
+                print(f"  批次 {i//BATCH_SIZE + 1}: {len(batch)} 只请求，{batch_ok} 只匹配写入")
             except Exception as e:
                 print(f"  批次 {i//BATCH_SIZE + 1} 失败: {e}")
             if i + BATCH_SIZE < len(thscodes):

@@ -983,7 +983,7 @@ async function doTriggerPrice() {
       });
       const d = await r.json();
       if (d.ok) {
-        st.textContent = '已启动'; st.className = 'pmkt-status ok';
+        st.textContent = '✓ 完成'; st.className = 'pmkt-status ok';
       } else {
         st.textContent = '失败'; st.className = 'pmkt-status err';
         showAlert(al, 'err', d.error || d.msg || '触发失败');

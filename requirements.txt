@@ -1,0 +1,2 @@
+thsdk
+psycopg2-binary

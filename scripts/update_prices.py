@@ -156,6 +156,32 @@ def us_date() -> str:
     return d.isoformat()
 
 
+# ── 价格获取 ──────────────────────────────────────────────────────────────────
+
+def _get_price(ths, market_fn, thscode: str, market_key: str) -> tuple:
+    """实时行情优先，无数据时用日K线兜底。返回 (price, date_str|None)。"""
+    resp = market_fn(thscode, "基础数据")
+    if resp and resp.data:
+        d = resp.data[0]
+        price = d.get("价格")
+        if price:
+            return float(price), None
+
+    # 兜底：日K线取最近收盘价
+    try:
+        k = ths.klines(thscode, interval="day", count=5, adjust="forward")
+        if k and k.df is not None and not k.df.empty:
+            last = k.df.iloc[-1]
+            price = last.get("收盘价")
+            date  = str(last.get("时间", ""))[:10]
+            if price:
+                return float(price), date or None
+    except Exception as e:
+        print(f"    klines({thscode}) 失败: {e}")
+
+    return None, None
+
+
 # ── 更新逻辑 ──────────────────────────────────────────────────────────────────
 
 def _update(conn, stocks: list[dict], market_key: str, tag: str, price_date: str):
@@ -180,19 +206,13 @@ def _update(conn, stocks: list[dict], market_key: str, tag: str, price_date: str
                 save_thscode(conn, s["id"], thscode)
 
             try:
-                resp = fn(thscode, "基础数据")
-                if resp and resp.data:
-                    d     = resp.data[0]
-                    price = d.get("价格") or d.get("最新价") or d.get("收盘价")
-                    if price:
-                        price = float(price)
-                        write_price(conn, s["id"], price, price_date)
-                        print(f"  ✅ {s['name']} ({thscode}): {price}")
-                        ok += 1
-                    else:
-                        print(f"  ⚠ {s['name']} ({thscode}): 字段未找到 keys={list(d.keys())}")
+                price, actual_date = _get_price(ths, fn, thscode, market_key)
+                if price:
+                    write_price(conn, s["id"], price, actual_date or price_date)
+                    print(f"  ✅ {s['name']} ({thscode}): {price}  [{actual_date or price_date}]")
+                    ok += 1
                 else:
-                    print(f"  ⚠ {s['name']} ({thscode}): resp.data 为空")
+                    print(f"  ⚠ {s['name']} ({thscode}): 无法获取价格")
             except Exception as e:
                 print(f"  ❌ {s['name']} ({thscode}): {e}")
 

@@ -5,7 +5,6 @@
       "maxDuration": 30
     },
     "api/trigger.py": {
-      "runtime": "python3.12",
       "memory": 256,
       "maxDuration": 300
     }

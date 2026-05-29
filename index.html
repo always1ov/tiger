@@ -207,6 +207,23 @@ tr.r-recover td{background:rgba(163,113,247,.03)}
 .mbody{padding:18px 20px}
 .mfoot{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
 
+/* Info button */
+.btn-info{width:28px;height:28px;border-radius:50%;background:var(--card2);border:1px solid var(--border);color:var(--sub);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.btn-info:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Info modal content */
+.info-sec{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.info-sec:last-child{border-bottom:none}
+.info-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);margin-bottom:8px}
+.info-grid{display:flex;flex-direction:column;gap:8px}
+.info-row{display:flex;align-items:flex-start;gap:10px}
+.info-tag{font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;border:1px solid;white-space:nowrap;flex-shrink:0;margin-top:1px}
+.info-kv{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.info-kv>div{display:flex;gap:10px;font-size:13px}
+.info-kv-k{color:var(--sub);white-space:nowrap;min-width:64px;flex-shrink:0}
+.info-kv-v{color:var(--text)}
+.info-principle{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--sub)}
+
 /* Form */
 .fg{margin-bottom:12px}
 .fg label{display:block;font-size:11px;color:var(--sub);margin-bottom:4px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
@@ -250,6 +267,7 @@ tr.r-recover td{background:rgba(163,113,247,.03)}
     </label>
     <button class="btn btn-s" onclick="openManual()">+ 手动</button>
     <button class="btn btn-p" onclick="openSubmit()">提交报告</button>
+    <button class="btn-info" onclick="openInfo()" title="系统说明">?</button>
   </div>
 </div>
 
@@ -354,6 +372,70 @@ tr.r-recover td{background:rgba(163,113,247,.03)}
     <div class="mfoot">
       <button class="btn btn-s" onclick="closeOv('delOv')">取消</button>
       <button class="btn btn-d" id="delBtn" onclick="doDelete()">确认删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- Info -->
+<div class="ov h" id="infoOv">
+  <div class="modal" style="max-width:600px">
+    <div class="mhdr"><h2>📖 利弗莫尔趋势追踪系统</h2><button class="mclose" onclick="closeOv('infoOv')">×</button></div>
+    <div class="mbody" style="line-height:1.8;font-size:13px">
+
+      <div class="info-sec">
+        <div class="info-title">核心理念</div>
+        <p style="color:var(--sub)">顺势而为——趋势向上时持有或加仓，趋势向下时减仓或清仓。以收盘价为准判断趋势，不追涨，不抄底。</p>
+      </div>
+
+      <div class="info-sec">
+        <div class="info-title">通道状态</div>
+        <div class="info-grid">
+          <div class="info-row">
+            <span class="info-tag" style="background:rgba(248,81,73,.15);color:var(--red);border-color:rgba(248,81,73,.3)">下跌趋势</span>
+            <span style="color:var(--sub)">减仓 / 清仓。收盘价跌破关键价格下跌配置%时触发，坚决离场不恋战。</span>
+          </div>
+          <div class="info-row">
+            <span class="info-tag" style="background:rgba(210,153,34,.15);color:var(--yellow);border-color:rgba(210,153,34,.3)">自然回调</span>
+            <span style="color:var(--sub)">上涨趋势中的正常回撤，持仓观望，未到止盈线不减仓。</span>
+          </div>
+          <div class="info-row">
+            <span class="info-tag" style="background:rgba(56,139,253,.15);color:var(--accent);border-color:rgba(56,139,253,.3)">自然回升</span>
+            <span style="color:var(--sub)">下跌趋势中的反弹，观察是否真正转势，准备建仓但不轻易入场。</span>
+          </div>
+          <div class="info-row">
+            <span class="info-tag" style="background:rgba(63,185,80,.15);color:var(--green);border-color:rgba(63,185,80,.3)">上涨趋势</span>
+            <span style="color:var(--sub)">持有 / 加仓。顺势持股，跟踪止盈，以收盘价 × (1 − 下跌配置%) 为通道切换参考线。</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-sec">
+        <div class="info-title">通道切换判断</div>
+        <p style="color:var(--sub)">以<strong style="color:var(--text)">变化日收盘价</strong>为关键价格，不以盘中高低点计算。<br>
+        例：收盘价 145.81，下跌配置 6%，则 145.81 × 0.94 = <strong style="color:var(--text)">137.06</strong> 为切换参考线，跌破即视为通道改变。</p>
+      </div>
+
+      <div class="info-sec">
+        <div class="info-title">上涨 / 下跌配置比例</div>
+        <p style="color:var(--sub)">单只标的的<strong style="color:var(--text)">仓位上限</strong>，不是涨跌幅。</p>
+        <div class="info-kv">
+          <div><span class="info-kv-k">起始默认</span><span class="info-kv-v">股票 6% : 6%，基金 / ETF 3% : 3%</span></div>
+          <div><span class="info-kv-k">参数优化</span><span class="info-kv-v">每季度依据上季度真实回测数据更新最优配置（如闪迪 SNDK 最优为 6% : 7%，累计收益率 335.78%）</span></div>
+          <div><span class="info-kv-k">多头偏向</span><span class="info-kv-v">上涨配置 &gt; 下跌配置，趋势向好时适当加大上行暴露</span></div>
+          <div><span class="info-kv-k">防守偏向</span><span class="info-kv-v">下跌配置 &gt; 上涨配置，趋势不明时收窄上行、放大止损保护</span></div>
+        </div>
+      </div>
+
+      <div class="info-sec" style="margin-bottom:0">
+        <div class="info-title">操作原则</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+          <div class="info-principle">✅ 趋势确认后再入场</div>
+          <div class="info-principle">✅ 跟踪止盈，不设固定目标价</div>
+          <div class="info-principle">❌ 不抄底，不摊平下跌仓位</div>
+          <div class="info-principle">❌ 不因回调减仓上涨趋势股</div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -816,6 +898,7 @@ function showAlert(el,t,m){ el.innerHTML=`<div class="alert a-${t}">${esc(m)}</d
 // Modal
 // ─────────────────────────────────────────────────────────────────────────────
 
+function openInfo(){ showOv('infoOv'); }
 function openSubmit(){ reset('subAlert','subTxt','subPwd'); showOv('submitOv'); }
 function openManual(){ document.getElementById('m_dt').value=new Date().toISOString().slice(0,10); reset('manAlert'); showOv('manualOv'); }
 function showOv(id)  { document.getElementById(id).classList.remove('h'); }

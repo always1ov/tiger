@@ -817,7 +817,11 @@ async function doSubmit() {
   try {
     const r=await fetch('/api/reports',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:txt,password:pwd})});
     const d=await r.json(); if (!r.ok) throw new Error(d.error||r.statusText);
-    showAlert(al,'ok',`✓ 保存成功（${d.usedAI?'AI':'本地兜底'}）—— 新增 ${d.inserted} 条，跳过 ${d.skipped} 条重复`);
+    const parts = [];
+    if (d.inserted) parts.push(`新增 ${d.inserted} 条`);
+    if (d.updated)  parts.push(`更新 ${d.updated} 条`);
+    if (d.skipped)  parts.push(`跳过 ${d.skipped} 条（无代码）`);
+    showAlert(al,'ok',`✓ 保存成功（${d.usedAI?'AI':'本地兜底'}）—— ${parts.join('，') || '无变化'}`);
     await Promise.all([loadReports(),loadTracking()]);
     setTimeout(()=>closeOv('submitOv'),2000);
   } catch(e){ showAlert(al,'err',e.message); }
@@ -849,7 +853,7 @@ async function doManual() {
   try {
     const r=await fetch('/api/items',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     const d=await r.json(); if (!r.ok) throw new Error(d.error||r.statusText);
-    showAlert(al,'ok','✓ 添加成功');
+    showAlert(al,'ok', d.action === '已更新' ? '✓ 已更新该标的数据' : '✓ 新增成功');
     await Promise.all([loadReports(),loadTracking()]);
     setTimeout(()=>closeOv('manualOv'),1200);
   } catch(e){ showAlert(al,'err',e.message); }

@@ -41,27 +41,33 @@ module.exports = async function handler(req, res) {
         reportId = r.id;
       }
 
-      try {
-        const [row] = await sql`
-          INSERT INTO items (
-            report_id, name, exchange, code,
-            up_pct, down_pct, channel_from, channel_to,
-            price_type, price, price_date, market, report_date
-          ) VALUES (
-            ${reportId}, ${name}, ${exchange || null}, ${code},
-            ${up_pct || null}, ${down_pct || null},
-            ${channel_from || null}, ${channel_to || null},
-            ${price_type || null}, ${price || null}, ${price_date || null},
-            ${market}, ${report_date}
-          ) RETURNING *
-        `;
-        return res.json({ ok: true, item: row });
-      } catch (e) {
-        if (e.code === '23505') {
-          return res.status(409).json({ error: '该市场+日期+代码已存在' });
-        }
-        throw e;
-      }
+      const [row] = await sql`
+        INSERT INTO items (
+          report_id, name, exchange, code,
+          up_pct, down_pct, channel_from, channel_to,
+          price_type, price, price_date, market, report_date
+        ) VALUES (
+          ${reportId}, ${name}, ${exchange || null}, ${code},
+          ${up_pct || null}, ${down_pct || null},
+          ${channel_from || null}, ${channel_to || null},
+          ${price_type || null}, ${price || null}, ${price_date || null},
+          ${market}, ${report_date}
+        )
+        ON CONFLICT (market, report_date, code) DO UPDATE SET
+          report_id    = EXCLUDED.report_id,
+          name         = EXCLUDED.name,
+          exchange     = EXCLUDED.exchange,
+          up_pct       = EXCLUDED.up_pct,
+          down_pct     = EXCLUDED.down_pct,
+          channel_from = EXCLUDED.channel_from,
+          channel_to   = EXCLUDED.channel_to,
+          price_type   = EXCLUDED.price_type,
+          price        = EXCLUDED.price,
+          price_date   = EXCLUDED.price_date
+        RETURNING *, (xmax = 0) AS is_insert
+      `;
+      const action = row.is_insert ? '新增' : '已更新';
+      return res.json({ ok: true, item: row, action });
     }
 
     if (req.method === 'DELETE') {

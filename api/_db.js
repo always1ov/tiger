@@ -15,9 +15,16 @@ async function initDb() {
       report_date DATE NOT NULL,
       source TEXT NOT NULL,
       raw_text TEXT,
-      created_at TIMESTAMPTZ DEFAULT NOW()
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(market, report_date, source)
     )
   `;
+  // Add unique constraint for existing deployments that lack it
+  await sql`
+    ALTER TABLE reports
+    ADD CONSTRAINT IF NOT EXISTS reports_market_date_source_key
+    UNIQUE (market, report_date, source)
+  `.catch(() => {});
   await sql`
     CREATE TABLE IF NOT EXISTS items (
       id SERIAL PRIMARY KEY,

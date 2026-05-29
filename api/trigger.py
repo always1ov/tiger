@@ -1,11 +1,10 @@
 """
 Vercel Python 函数：直接调用 thsdk 更新收盘价
-无需本地同花顺客户端，thsdk 直连同花顺数据服务 API
+thsdk 游客模式，无需任何 token 或账户配置
 
 Vercel 环境变量：
   DATABASE_URL      Neon 数据库连接串
   SUBMIT_PASSWORD   操作密码
-  THS_TOKEN         同花顺 API token（thsdk 鉴权用）
 """
 
 import json

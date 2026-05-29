@@ -48,7 +48,7 @@ module.exports = async function handler(req, res) {
         ) AS snapshots
       FROM items i
       GROUP BY i.code, i.exchange, i.market
-      ORDER BY MAX(i.report_date) DESC, i.market, i.name
+      ORDER BY MAX(i.report_date) DESC, i.market, MIN(i.name)
     `;
 
     return res.json(rows);

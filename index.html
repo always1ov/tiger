@@ -75,6 +75,12 @@ input:checked+.sl:before{transform:translateX(15px)}
 .r-src{font-size:13px;color:var(--sub)}
 .r-act{margin-left:auto}
 
+/* Market sub-header (inside a date card) */
+.mkt-hdr{display:flex;align-items:center;gap:9px;padding:9px 16px;background:rgba(255,255,255,.025);border-top:1px solid var(--border);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.mkt-hdr:first-of-type{border-top:none}
+.mkt-src{font-size:13px;color:var(--sub)}
+.mkt-cnt{font-size:12px;color:var(--sub);background:var(--card2);border:1px solid var(--border);padding:1px 7px;border-radius:10px}
+
 /* ── Report summary bar ── */
 .rsumm{display:flex;align-items:center;gap:0;border-bottom:1px solid var(--border)}
 .rsumm-pill{display:flex;align-items:center;gap:6px;padding:7px 14px;font-size:12px;font-weight:600;border-right:1px solid var(--border);flex-shrink:0}
@@ -465,75 +471,102 @@ function renderRep() {
     return;
   }
 
-  let html = '';
+  // ── Group reports by date ──────────────────────────────────────────────────
+  // allReports is already sorted DESC by date from the API
+  const byDate = {};           // { "2026-05-29": [rep, rep, ...] }
+  const dateOrder = [];        // unique dates in order
+
   for (const rep of allReports) {
-    const all = rep.items || [];
-    const items = q ? all.filter(i => i.name?.toLowerCase().includes(q) || i.code?.toLowerCase().includes(q)) : all;
-    if (q && !items.length) continue;
+    const d = (rep.report_date||'').slice(0,10);
+    if (!byDate[d]) { byDate[d] = []; dateOrder.push(d); }
+    byDate[d].push(rep);
+  }
 
-    const rawDate = (rep.report_date||'').slice(0,10);
-    const isToday = rawDate === today;
+  let html = '';
 
-    // Group by signal type
-    const sells    = items.filter(i => signal(i) === 'SELL');
-    const recovers = items.filter(i => signal(i) === 'RECOVER');
-    const newUps   = items.filter(i => signal(i) === 'NEW_UP');
-    const holds    = items.filter(i => signal(i) === 'HOLD');
+  for (const date of dateOrder) {
+    const reports = byDate[date];
+    const isToday = date === today;
 
-    // Summary counts
+    // Collect all items across all markets for this date (for search filter)
+    const allItemsForDate = reports.flatMap(r => {
+      const items = r.items || [];
+      return q ? items.filter(i => i.name?.toLowerCase().includes(q) || i.code?.toLowerCase().includes(q)) : items;
+    });
+    if (q && !allItemsForDate.length) continue;
+
+    // Date-level signal summary (across all markets)
+    const allSells    = allItemsForDate.filter(i => signal(i) === 'SELL');
+    const allNewUps   = allItemsForDate.filter(i => signal(i) === 'NEW_UP');
+    const allRecovers = allItemsForDate.filter(i => signal(i) === 'RECOVER');
+    const allHolds    = allItemsForDate.filter(i => signal(i) === 'HOLD');
+
     html += `<div class="rcard">
       <div class="rhdr">
-        <span class="r-mkt">${esc(rep.market)}</span>
-        <span class="r-date">${rawDate}</span>
-        <span class="r-age ${isToday?'today':'old'}">${daysAgo(rawDate)}</span>
-        <span class="r-src">${esc(rep.source)}</span>
-        <div class="r-act">
-          <button class="btn btn-d btn-sm" onclick="confirmDel(${rep.id},'report','整个报告（含全部标的）')">删除</button>
-        </div>
+        <span class="r-date">${date}</span>
+        <span class="r-age ${isToday?'today':'old'}">${daysAgo(date)}</span>
+        <span style="font-size:12px;color:var(--sub)">${reports.length} 份报告 · ${allItemsForDate.length} 只标的</span>
       </div>
       <div class="rsumm">
-        ${sells.length   ? `<div class="rsumm-pill s-sell"><span class="pill-n">${sells.length}</span><span class="lbl">卖出信号</span></div>` : ''}
-        ${newUps.length  ? `<div class="rsumm-pill s-up">  <span class="pill-n">${newUps.length}</span><span class="lbl">转升信号</span></div>` : ''}
-        ${recovers.length? `<div class="rsumm-pill s-hold"><span class="pill-n">${recovers.length}</span><span class="lbl">回升观察</span></div>` : ''}
-        <div class="rsumm-pill s-hold"><span class="pill-n">${holds.length}</span><span class="lbl">持仓观望</span></div>
+        ${allSells.length    ? `<div class="rsumm-pill s-sell"><span class="pill-n">${allSells.length}</span><span class="lbl">卖出信号</span></div>` : ''}
+        ${allNewUps.length   ? `<div class="rsumm-pill s-up"><span class="pill-n">${allNewUps.length}</span><span class="lbl">转升信号</span></div>` : ''}
+        ${allRecovers.length ? `<div class="rsumm-pill s-hold"><span class="pill-n">${allRecovers.length}</span><span class="lbl">回升观察</span></div>` : ''}
+        <div class="rsumm-pill s-hold"><span class="pill-n">${allHolds.length}</span><span class="lbl">持仓观望</span></div>
       </div>`;
 
-    // SELL section
-    if (sells.length) {
-      if (showSell) {
-        html += `<div class="sec-hdr sec-sell">⚠ 卖出信号 · 通道进入下跌趋势（${sells.length} 只）</div>`;
-        html += tbl(sells);
-      } else {
-        html += `<div class="sell-bar" onclick="document.getElementById('showSell').checked=true;renderRep()">
-          <span class="sell-bar-lbl">⚠ 卖出信号 ${sells.length} 只</span>
-          <span class="sell-bar-names">${sells.map(i=>esc(i.name)).join('、')}</span>
-          <span class="sell-bar-hint">点击展开 ›</span>
-        </div>`;
+    // ── Per-market sub-sections ───────────────────────────────────────────────
+    for (const rep of reports) {
+      const all   = rep.items || [];
+      const items = q ? all.filter(i => i.name?.toLowerCase().includes(q) || i.code?.toLowerCase().includes(q)) : all;
+      if (q && !items.length) continue;
+
+      const sells    = items.filter(i => signal(i) === 'SELL');
+      const recovers = items.filter(i => signal(i) === 'RECOVER');
+      const newUps   = items.filter(i => signal(i) === 'NEW_UP');
+      const holds    = items.filter(i => signal(i) === 'HOLD');
+
+      // Market sub-header
+      html += `<div class="mkt-hdr">
+        <span class="r-mkt">${esc(rep.market)}</span>
+        <span class="mkt-src">${esc(rep.source)}</span>
+        <span class="mkt-cnt">${items.length} 只</span>
+        <div style="margin-left:auto">
+          <button class="btn btn-d btn-sm" onclick="confirmDel(${rep.id},'report','${esc(rep.market)} ${date} 报告（含全部标的）')">删除</button>
+        </div>
+      </div>`;
+
+      // SELL
+      if (sells.length) {
+        if (showSell) {
+          html += `<div class="sec-hdr sec-sell">⚠ 卖出信号 · 下跌趋势（${sells.length} 只）</div>`;
+          html += tbl(sells);
+        } else {
+          html += `<div class="sell-bar" onclick="document.getElementById('showSell').checked=true;renderRep()">
+            <span class="sell-bar-lbl">⚠ 卖出 ${sells.length} 只</span>
+            <span class="sell-bar-names">${sells.map(i=>esc(i.name)).join('、')}</span>
+            <span class="sell-bar-hint">点击展开 ›</span>
+          </div>`;
+        }
+      }
+      // RECOVER
+      if (recovers.length) {
+        html += `<div class="sec-hdr sec-recover">↗ 回升观察（${recovers.length} 只）</div>`;
+        html += tbl(recovers);
+      }
+      // NEW_UP
+      if (newUps.length) {
+        html += `<div class="sec-hdr sec-up">▲ 转升信号（${newUps.length} 只）</div>`;
+        html += tbl(newUps);
+      }
+      // HOLD
+      if (holds.length) {
+        if (sells.length || recovers.length || newUps.length)
+          html += `<div class="sec-hdr sec-hold">持仓观望（${holds.length} 只）</div>`;
+        html += tbl(holds);
       }
     }
 
-    // RECOVER section
-    if (recovers.length) {
-      html += `<div class="sec-hdr sec-recover">↗ 回升观察 · 通道进入自然回升（${recovers.length} 只）</div>`;
-      html += tbl(recovers);
-    }
-
-    // NEW_UP section
-    if (newUps.length) {
-      html += `<div class="sec-hdr sec-up">▲ 转升信号 · 通道新进入上涨趋势（${newUps.length} 只）</div>`;
-      html += tbl(newUps);
-    }
-
-    // HOLD section
-    if (holds.length) {
-      const hasOtherSections = sells.length || recovers.length || newUps.length;
-      if (hasOtherSections) {
-        html += `<div class="sec-hdr sec-hold">持仓观望（${holds.length} 只）</div>`;
-      }
-      html += tbl(holds);
-    }
-
-    html += `</div>`;
+    html += `</div>`; // close date card
   }
 
   el.innerHTML = html || empty('🔍', `没有匹配「${esc(q)}」的结果`);

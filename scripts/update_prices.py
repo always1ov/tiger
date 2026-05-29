@@ -91,10 +91,6 @@ def write_price(conn, stock_id: int, price: float, price_date: str):
             UPDATE stocks SET price=%s, price_date=%s, updated_at=NOW()
             WHERE id=%s
         """, (price, price_date, stock_id))
-        cur.execute("""
-            UPDATE snapshots SET price=%s, price_date=%s
-            WHERE stock_id=%s AND report_date=%s
-        """, (price, price_date, stock_id, price_date))
     conn.commit()
 
 

@@ -30,7 +30,7 @@ jobs:
           cache: 'pip'
 
       - name: 安装依赖
-        run: pip install thsdk psycopg2-binary
+        run: pip install psycopg2-binary
 
       - name: 更新 A股
         if: >

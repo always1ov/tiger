@@ -108,7 +108,8 @@ def resolve_thscode(ths, stock: dict) -> str | None:
     if exchange in CN_PREFIX:
         return f"{CN_PREFIX[exchange]}{code}"
     if exchange == "HK":
-        return f"{HK_PREFIX}{code.zfill(HK_CODELEN)}"
+        # 先去掉前导零再补齐，避免重复前导零
+        return f"{HK_PREFIX}{code.lstrip('0').zfill(HK_CODELEN)}"
 
     # 美股等用 search_symbols 确定准确前缀
     try:

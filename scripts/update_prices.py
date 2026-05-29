@@ -17,7 +17,9 @@ thsdk 游客模式，无需账户配置
 
 import argparse
 import os
+import re
 import time
+import urllib.request
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -89,6 +91,34 @@ def write_price(conn, stock_id: int, price: float, price_date: str):
             WHERE stock_id=%s AND report_date=%s
         """, (price, price_date, stock_id, price_date))
     conn.commit()
+
+
+# ── 港股腾讯行情（零依赖，无鉴权）────────────────────────────────────────────
+
+def fetch_hk_close(code: str) -> dict | None:
+    """
+    腾讯行情 GET https://qt.gtimg.cn/q=hkXXXXX
+    code: 5位港股代码，如 00700
+    返回 {price: float, date: str} 或 None
+    """
+    padded = code.lstrip("0").zfill(5)
+    url = f"https://qt.gtimg.cn/q=hk{padded}"
+    try:
+        req = urllib.request.Request(url, headers={"Referer": "https://finance.qq.com"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            raw = resp.read().decode("gbk")
+        match = re.search(r'"(.+)"', raw)
+        if not match:
+            return None
+        fields = match.group(1).split("~")
+        if len(fields) < 38:
+            return None
+        price = float(fields[3])
+        date  = fields[30][:10]
+        return {"price": price, "date": date}
+    except Exception as e:
+        print(f"    腾讯行情({code}) 失败: {e}")
+        return None
 
 
 # ── THSCODE 解析 ──────────────────────────────────────────────────────────────
@@ -216,7 +246,21 @@ def update_cn(conn):
 
 def update_hk(conn):
     stocks = [s for s in fetch_all_stocks(conn) if s["exchange"] == "HK"]
-    _update(conn, stocks, "hk", "[HK]", cn_hk_date())
+    if not stocks:
+        print("[HK] 无标的，跳过")
+        return
+    price_date = cn_hk_date()
+    ok = 0
+    for s in stocks:
+        r = fetch_hk_close(s["code"])
+        if r:
+            write_price(conn, s["id"], r["price"], r["date"] or price_date)
+            print(f"  ✅ {s['name']} ({s['code']}): {r['price']}  [{r['date'] or price_date}]")
+            ok += 1
+        else:
+            print(f"  ⚠ {s['name']} ({s['code']}): 无法获取价格")
+        time.sleep(SLEEP)
+    print(f"[HK] 完成：{ok}/{len(stocks)} 只写入")
 
 
 def update_us(conn):

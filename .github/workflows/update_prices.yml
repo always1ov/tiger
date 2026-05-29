@@ -1,0 +1,64 @@
+name: 每日收盘价更新
+
+on:
+  # 定时触发（UTC 时间，GitHub Actions 用 UTC）
+  schedule:
+    - cron: '10 7 * * 1-5'   # A股：北京 15:10（UTC 07:10）周一至周五
+    - cron: '15 8 * * 1-5'   # 港股：北京 16:15（UTC 08:15）周一至周五
+    - cron: '30 21 * * 2-6'  # 美股：北京次日 05:30（UTC 21:30）周二至周六，对应美东冬令时收盘后
+
+  # 支持手动触发，可选择市场
+  workflow_dispatch:
+    inputs:
+      market:
+        description: '更新哪个市场'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - cn
+          - hk
+          - us
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: 安装依赖
+        run: pip install thsdk psycopg2-binary
+
+      - name: 更新 A股收盘价
+        if: |
+          github.event_name == 'workflow_dispatch' && (inputs.market == 'all' || inputs.market == 'cn') ||
+          github.event_name == 'schedule' && startsWith(github.event.schedule, '10 7')
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python scripts/update_prices.py --cn
+
+      - name: 更新港股收盘价
+        if: |
+          github.event_name == 'workflow_dispatch' && (inputs.market == 'all' || inputs.market == 'hk') ||
+          github.event_name == 'schedule' && startsWith(github.event.schedule, '15 8')
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python scripts/update_prices.py --hk
+
+      - name: 更新美股收盘价
+        if: |
+          github.event_name == 'workflow_dispatch' && (inputs.market == 'all' || inputs.market == 'us') ||
+          github.event_name == 'schedule' && startsWith(github.event.schedule, '30 21')
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python scripts/update_prices.py --us

@@ -28,10 +28,13 @@ from zoneinfo import ZoneInfo
 
 import psycopg2
 import psycopg2.extras
-from dotenv import load_dotenv
 from thsdk import THS
 
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # GitHub Actions 直接用环境变量，不需要 .env
 
 TZ_CN = ZoneInfo("Asia/Shanghai")
 TZ_US = ZoneInfo("America/New_York")

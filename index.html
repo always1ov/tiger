@@ -631,7 +631,7 @@ function tbl(items) {
         `:'<span style="color:var(--sub)">—</span>'}
       </td>
       <td style="text-align:right">
-        <button class="btn btn-d btn-sm" onclick="confirmDel(${item.id},'item','${esc(item.name)}（${esc(item.code)}）')">删除</button>
+        <button class="btn btn-d btn-sm" onclick="confirmDel(${item.id},'stock','${esc(item.name)}（${esc(item.code)}）及全部历史快照')">删除</button>
       </td>
     </tr>`;
   }).join('');
@@ -669,7 +669,7 @@ function renderTrk() {
     const ra=calcRet(a), rb=calcRet(b);
     if (srt==='gain_d') return (rb??-Infinity)-(ra??-Infinity);
     if (srt==='gain_a') return (ra??Infinity) -(rb??Infinity);
-    if (srt==='days')   return (+b.days_tracked||0)-(+a.days_tracked||0);
+    if (srt==='days')   return (+b.report_count||0)-(+a.report_count||0);
     return 0;
   });
 
@@ -690,7 +690,7 @@ function renderTrk() {
         <span style="font-size:12px;color:var(--sub)">${items.length} 只标的</span>
       </div>
       <div class="twrap"><table style="table-layout:fixed">
-        <colgroup><col style="width:160px"><col style="width:130px"><col style="width:200px"><col style="width:200px"><col style="width:140px"><col style="width:120px"></colgroup>
+        <colgroup><col style="width:160px"><col style="width:130px"><col style="width:200px"><col style="width:180px"><col style="width:130px"><col style="width:110px"><col style="width:60px"></colgroup>
         <thead><tr>
           <th>标的<span class="ts">名称 / 代码</span></th>
           <th>跟踪涨幅<span class="ts">首次记录价 → 最新价</span></th>
@@ -698,6 +698,7 @@ function renderTrk() {
           <th>当前通道<span class="ts">最新一期状态</span></th>
           <th>跟踪记录<span class="ts">首次 → 最新 · 共几次</span></th>
           <th>状态时序<span class="ts">通道变化历史</span></th>
+          <th></th>
         </tr></thead>
         <tbody>`;
 
@@ -746,9 +747,12 @@ function renderTrk() {
           <div style="font-size:12px">${fd}</div>
           <div style="font-size:10px;color:var(--sub);margin:1px 0">↓</div>
           <div style="font-size:12px">${ld}</div>
-          <div style="margin-top:4px"><span class="days-tag">${+t.days_tracked} 次记录</span></div>
+          <div style="margin-top:4px"><span class="days-tag">${+t.report_count} 次记录</span></div>
         </td>
         <td>${spark(t.snapshots||[])}</td>
+        <td style="text-align:right">
+          <button class="btn btn-d btn-sm" onclick="confirmDel(${t.id},'stock','${esc(t.name)}（${esc(t.code)}）及全部历史')">删除</button>
+        </td>
       </tr>`;
     }
     html += `</tbody></table></div></div>`;
